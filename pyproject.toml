@@ -1,5 +1,4 @@
 [tool.black]
-exclude = "migrations"
 
 [tool.flake8]
 # Flake8 doesn't support pyproject.toml yet (see .flake8 file):
@@ -9,6 +8,5 @@ max-line-length = 88
 [tool.isort]
 line_length = 88
 force_single_line = "1"
-known_first_party = ["app", "tests"]
+known_first_party = ["lib", "tests", "use_case"]
 default_section = "THIRDPARTY"
-skip = "*/migrations/*"

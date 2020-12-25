@@ -9,6 +9,11 @@ name = "pypi"
 flake8 = "*"
 isort = "*"
 black = "==20.8b1"
+mypy = "*"
+pytest = "*"
+ipython = "*"
+ipdb = "*"
+coverage = "*"
 
 [requires]
-python_version = "3.8"
+python_version = "3.9"

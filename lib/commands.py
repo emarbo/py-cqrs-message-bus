@@ -1,6 +1,5 @@
 import typing as t
 from pprint import pprint  # noqa
-from functools import partial
 
 
 class ExecutionWrapper:
@@ -32,23 +31,36 @@ class ExecutionWrapper:
 
 class CommandType(type):
 
-    __stack = []
+    #
+    # TODO: Allow a way to configure the Command Bus. This Bus should be a singleton
+    # instance for all the Commands.
+    #
+    # TODO: Prepare Event Bus handling multi-threading. That is, the same thread must
+    # execute its own events. Probably this needs to threadlocal the __queue or use
+    # closures.
+    #
+    # TODO: Prepare the ExecutionWrapper / CommandType to handle multi-threaded stacks.
+    #
+
+    __stack: t.List[t.Any] = []
 
     def __new__(cls, clsname, bases, attrs):
-
-        attrs["execute"] = ExecutionWrapper(cls.__stack, attrs["execute"])
-
+        #
+        # TODO: Improve this hack for an inherited `execute`. We shouldn't wrap twice
+        # and each Command should have its own `execute`.
+        #
+        if "execute" in attrs:
+            attrs["execute"] = ExecutionWrapper(cls.__stack, attrs["execute"])
         return super().__new__(cls, clsname, bases, attrs)
 
 
 class Command(metaclass=CommandType):
     def execute(self):
-        print("Executed")
+        print("Command")
+        self._parent_method()
 
-    print(execute)
-
-
-print(Command.execute)
+    def _parent_method(self):
+        print("Parent method")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,10 @@
+[flake8]
+# Black default
+max-line-length = 88
+exclude =
+    .po,
+    .git,
+    static,
+    build,
+    dist,
+    */migrations/*,
