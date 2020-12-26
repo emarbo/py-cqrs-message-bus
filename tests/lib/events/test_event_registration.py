@@ -1,8 +1,8 @@
 import pytest
 from dataclasses import dataclass
 
-from lib.events.event import Event
-from lib.events.event import EventType
+from lib.events import Event
+from lib.events import EventType
 
 
 def test_event_registers(clear_events):

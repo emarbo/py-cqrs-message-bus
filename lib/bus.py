@@ -2,8 +2,8 @@ import typing as t
 from collections import OrderedDict
 from collections import defaultdict
 
-from lib.events.event import EventType
-from lib.events.event import Event
+from lib.events import EventType
+from lib.events import Event
 
 
 EventHandler = t.Callable[[Event], t.Any]

@@ -1,6 +1,6 @@
 import pytest
 
-from lib.events.event import EventType
+from lib.events import EventType
 
 
 @pytest.fixture()

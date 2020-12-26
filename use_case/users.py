@@ -1,4 +1,4 @@
-from lib.events.event import Event
+from lib.events import Event
 
 
 class UserCreatedEvent(Event):

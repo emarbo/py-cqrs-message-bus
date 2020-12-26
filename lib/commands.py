@@ -41,6 +41,11 @@ class CommandType(type):
     #
     # TODO: Prepare the ExecutionWrapper / CommandType to handle multi-threaded stacks.
     #
+    # TODO TODO: Copy cosmicpython approach -> use MessageBus to handle stack stuff.
+    # They collect the events after the command is successfully executed. This would
+    # leave the Command class fairly simple and reuse code for event/command handing in
+    # the single point: MessageBus
+    #
 
     __stack: t.List[t.Any] = []
 
