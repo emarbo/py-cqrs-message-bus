@@ -5,7 +5,7 @@ from lib.events import Event
 from lib.events import EventType
 
 
-def test_event_registers(clear_events):
+def test_event_registers(clear_meta):
     """
     Events are registered in the EventType metaclass
     """
@@ -16,7 +16,7 @@ def test_event_registers(clear_events):
     assert MyEvent == EventType._events["MyEvent"]
 
 
-def test_name_collision_raises_exception(clear_events):
+def test_name_collision_raises_exception(clear_meta):
     """
     Events names collision raises an exception
     """
@@ -30,7 +30,7 @@ def test_name_collision_raises_exception(clear_events):
             NAME = "MyEvent"
 
 
-def test_event_dataclasses(clear_events):
+def test_event_dataclasses(clear_meta):
     """
     Events can be dataclasses
     """

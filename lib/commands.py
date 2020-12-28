@@ -1,73 +1,34 @@
 import typing as t
-from pprint import pprint  # noqa
+from lib.messages import MessageType
+from lib.messages import Message
 
 
-class ExecutionWrapper:
-
-    __command_stack: list
-    __execute_method: t.Callable
-
-    def __init__(self, command_stack, execute_method):
-        self.__command_stack = command_stack
-        self.__execute_method = execute_method
-
-    def __get__(self, instance, owner):
-        if instance is None:
-            return self
-        else:
-
-            def wrapper():
-                self.__command_stack.append(None)
-                try:
-                    print("Before")
-                    self.__execute_method(instance)
-                finally:
-                    self.__command_stack.pop()
-                    if not self.__command_stack:
-                        print("Command End")
-
-            return wrapper
+# Command handlers may return a result
+CommandHandler = t.Callable[["Command"], t.Any]
 
 
-class CommandType(type):
+class CommandType(MessageType):
+    """
+    The Command metaclass
+    """
 
-    #
-    # TODO: Allow a way to configure the Command Bus. This Bus should be a singleton
-    # instance for all the Commands.
-    #
-    # TODO: Prepare Event Bus handling multi-threading. That is, the same thread must
-    # execute its own events. Probably this needs to threadlocal the __queue or use
-    # closures.
-    #
-    # TODO: Prepare the ExecutionWrapper / CommandType to handle multi-threaded stacks.
-    #
-    # TODO TODO: Copy cosmicpython approach -> use MessageBus to handle stack stuff.
-    # They collect the events after the command is successfully executed. This would
-    # leave the Command class fairly simple and reuse code for event/command handing in
-    # the single point: MessageBus
-    #
+    _commands: t.Dict[str, "CommandType"] = {}
 
-    __stack: t.List[t.Any] = []
+    def __new__(cls, name, bases, dic):
+        command_cls = super().__new__(cls, name, bases, dic)
+        cls._commands[command_cls.NAME] = command_cls
+        return command_cls
 
-    def __new__(cls, clsname, bases, attrs):
-        #
-        # TODO: Improve this hack for an inherited `execute`. We shouldn't wrap twice
-        # and each Command should have its own `execute`.
-        #
-        if "execute" in attrs:
-            attrs["execute"] = ExecutionWrapper(cls.__stack, attrs["execute"])
-        return super().__new__(cls, clsname, bases, attrs)
+    @classmethod
+    def _clear(cls):
+        """
+        Resets internal state. For testing.
+        """
+        cls._events = {}
 
 
-class Command(metaclass=CommandType):
-    def execute(self):
-        print("Command")
-        self._parent_method()
-
-    def _parent_method(self):
-        print("Parent method")
-
-
-if __name__ == "__main__":
-    c = Command()
-    c.execute()
+class Command(Message, metaclass=CommandType):
+    """
+    The Command base class. To inherit and set the NAME.
+    """
+    pass

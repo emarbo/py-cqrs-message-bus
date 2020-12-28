@@ -2,16 +2,19 @@ import typing as t
 from collections import OrderedDict
 from collections import defaultdict
 
+from lib.messages import MessageType
 from lib.events import EventType
 from lib.events import Event
+from lib.events import EventHandler
+from lib.commands import CommandType
+from lib.commands import Command
+from lib.commands import CommandHandler
 
 
-EventHandler = t.Callable[[Event], t.Any]
 
-
-class EventBus:
+class MessageBus:
     """
-    An in-memory event bus.
+    An in-memory message bus.
     """
 
     _queue: OrderedDict
