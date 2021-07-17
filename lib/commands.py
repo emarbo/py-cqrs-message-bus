@@ -12,7 +12,7 @@ class CommandType(MessageType):
     The Command metaclass
     """
 
-    _commands: t.Dict[str, "CommandType"] = {}
+    _commands: dict[str, "CommandType"] = {}
 
     def __new__(cls, name, bases, dic):
         command_cls = super().__new__(cls, name, bases, dic)

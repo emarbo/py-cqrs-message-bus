@@ -9,7 +9,7 @@ class MessageType(type):
     Message.NAME type and collision check
     """
 
-    _messages: t.Dict[str, "MessageType"] = {}
+    _messages: dict[str, "MessageType"] = {}
 
     def __new__(cls, name, bases, dic, **kw):
         cls._set_default_name(name, dic)

@@ -12,7 +12,7 @@ class EventType(MessageType):
     The Event metaclass
     """
 
-    _events: t.Dict[str, "EventType"] = {}
+    _events: dict[str, "EventType"] = {}
 
     def __new__(cls, name, bases, dic):
         event_cls = super().__new__(cls, name, bases, dic)
