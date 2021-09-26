@@ -1,4 +1,6 @@
 import typing as t
+from lib.exceptions import InvalidMessageName
+from lib.exceptions import DuplicatedMessageName
 
 
 class MessageType(type):
@@ -32,7 +34,9 @@ class MessageType(type):
     def _check_name_type(cls, name, dic):
         message_name = dic["NAME"]
         if not isinstance(message_name, str):
-            raise RuntimeError(f"{name}.NAME is not string: {type(message_name)}")
+            raise InvalidMessageName(
+                f"{name}.NAME must be of 'str' type. Found: '{type(message_name)}'"
+            )
 
     @classmethod
     def _check_unique_name(cls, name, dic):
@@ -41,7 +45,7 @@ class MessageType(type):
             message_cls = cls._messages[message_name]
         except KeyError:
             return
-        raise RuntimeError(
+        raise DuplicatedMessageName(
             "These messages have the same NAME: "
             f"'{name}' and '{message_cls.__name__}'"
         )
@@ -60,6 +64,3 @@ class Message(metaclass=MessageType):
     """
 
     NAME: t.ClassVar[str]
-
-    def __hash__(self):
-        return hash((self.__class__, self.NAME))

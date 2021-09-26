@@ -37,6 +37,8 @@ class MessageBus:
         """
         Subscribe to an event type. An event may have multiple handlers
         """
+        if not isinstance(event, EventType):
+            raise InvalidMessageType(f"This is not an event class: '{event}'")
         self.event_handlers[event.NAME].append(handler)
 
     def subscribe_command(self, command: CommandType, handler: CommandHandler):
@@ -45,10 +47,12 @@ class MessageBus:
 
         :raises: ConfigError if there is already a handler
         """
+        if not isinstance(command, CommandType):
+            raise InvalidMessageType(f"This is not an command class: '{command}'")
         try:
             current_handler = self.command_handlers[command.NAME]
         except KeyError:
-            self.command_handlers[command.NAME].append(handler)
+            self.command_handlers[command.NAME] = handler
         else:
             raise DuplicatedCommandHandler(
                 f"Duplicated handler for command '{command}'. "
@@ -61,7 +65,7 @@ class MessageBus:
         :raises MissingCommandHandler: if the command has no handler configured
         """
         if not isinstance(command, Command):
-            raise InvalidMessageType(f"This is not a command: '{command}'")
+            raise InvalidMessageType(f"This is not an command instance: '{command}'")
         try:
             handler = self.command_handlers[command.NAME]
         except KeyError:
@@ -73,6 +77,8 @@ class MessageBus:
         """
         Emit an event. If there's no running transaction, it's handled immediately
         """
+        if not isinstance(event, Event):
+            raise InvalidMessageType(f"This is not an event instance: '{event}'")
         if self.transaction_stack:
             self.transaction_stack[-1].emit_event(event)
         else:
@@ -98,30 +104,30 @@ class Transaction:
     """
 
     # CQ management
-    bus: "MessageBus"
-    events: list["Event"]
+    bus: MessageBus
+    events: list[Event]
 
     # Transaction management
     parent: t.Optional["Transaction"]
 
-    def __init__(self, bus: "MessageBus", parent: "Transaction" = None):
+    def __init__(self, bus: MessageBus, parent: "Transaction" = None):
         self.bus = bus
         self.events = []
 
         self.parent = parent
 
-    def emit_event(self, event: "Event"):
+    def emit_event(self, event: Event):
         self.events.append(event)
 
-    def emit_event_many(self, events: list["Event"]):
+    def emit_event_many(self, events: list[Event]):
         self.events.extend(events)
 
     def commit(self):
         if self.parent:
-            self.parent.emit_many(self.events)
+            self.parent.emit_event_many(self.events)
         else:
             for event in self.events:
-                self.bus.handle(event)
+                self.bus._handle_event(event)
 
     def rollback(self):
         pass
@@ -132,12 +138,12 @@ class TransactionManager:
     Bridge between the CQS library and the underlaying framework/database
     """
 
-    bus: "MessageBus"
+    bus: MessageBus
 
-    def __init__(self, bus: "MessageBus"):
+    def __init__(self, bus: MessageBus):
         self.bus = bus
 
-    def start(self):
+    def begin(self):
         try:
             parent = self.bus.transaction_stack[-1]
         except IndexError:

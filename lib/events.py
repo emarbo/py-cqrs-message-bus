@@ -15,6 +15,7 @@ class EventType(MessageType):
     _events: dict[str, "EventType"] = {}
 
     def __new__(cls, name, bases, dic):
+        # super checks NAME correctness and may assign a default
         event_cls = super().__new__(cls, name, bases, dic)
         cls._events[event_cls.NAME] = event_cls
         return event_cls

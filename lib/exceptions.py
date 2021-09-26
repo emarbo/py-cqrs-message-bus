@@ -1,18 +1,55 @@
 class CQError(Exception):
-    pass
+    """
+    Root exception
+    """
 
 
 class ConfigError(CQError):
-    pass
+    """
+    General configuration error
+    """
+
+
+# --------------------------------------
+# Errors on Message declarations
+# --------------------------------------
+
+
+class InvalidMessageName(ConfigError, TypeError):
+    """
+    The Message.NAME must be an string
+    """
+
+
+class DuplicatedMessageName(ConfigError, TypeError):
+    """
+    Two messages have the same NAME
+    """
+
+
+# --------------------------------------
+# Errors on handlers
+# --------------------------------------
 
 
 class DuplicatedCommandHandler(ConfigError):
-    pass
+    """
+    A Command can have only one handler
+    """
 
 
 class MissingCommandHandler(ConfigError, RuntimeError):
-    pass
+    """
+    No handler found for a Command
+    """
+
+
+# --------------------------------------
+# Errors on handlers
+# --------------------------------------
 
 
 class InvalidMessageType(CQError, TypeError):
-    pass
+    """
+    The Bus only handles Message types
+    """
