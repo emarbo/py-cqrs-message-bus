@@ -1,0 +1,42 @@
+#!/bin/bash
+
+if [ "${BASH_SOURCE-}" = "$0" ]; then
+    echo "You must source this script: \$ source $0" >&2
+    exit 33
+fi
+
+clone_function() {
+    local ORIG_FUNC=$(declare -f $1)
+    local NEWNAME_FUNC="$2${ORIG_FUNC#$1}"
+    eval "$NEWNAME_FUNC"
+}
+
+
+# pipenv --venv shows error if virtualenv does not exist
+venv=$(pipenv --venv)
+
+if [ ! -z "$venv" ]
+then
+    source "$venv/bin/activate"
+
+    # https://stackoverflow.com/a/246128/1731701
+    _PROJECTPATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+    # Add this project to the pythonpath
+    _OLD_PYTHONPATH="$PYTHONPATH"
+    export PYTHONPATH="$_PROJECTPATH"
+
+    # Extend virtualenv deactivate function
+    clone_function deactivate _old_deactivate
+    unset -f deactivate
+    deactivate() {
+        _old_deactivate 
+        export PYTHONPATH="$_OLD_PYTHONPATH"
+
+        unset -f _old_deactivate
+        unset _OLD_PYTHONPATH
+        unset _PROJECTPATH
+    }
+fi
+
+unset venv
