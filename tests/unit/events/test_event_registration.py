@@ -1,9 +1,9 @@
 import pytest
 from dataclasses import dataclass
 
-from lib.messages import MessageType
+from lib.messages import MessageMeta
 from lib.events import Event
-from lib.events import EventType
+from lib.events import EventMeta
 from lib.exceptions import CQError
 
 
@@ -15,8 +15,8 @@ def test_events_are_registered(clear_meta):
     class MyEvent(Event):
         NAME = "MyEvent"
 
-    assert MyEvent is EventType._events["MyEvent"]
-    assert MyEvent is MessageType._messages["MyEvent"]
+    assert MyEvent is EventMeta._events["MyEvent"]
+    assert MyEvent is MessageMeta._messages["MyEvent"]
 
 
 def test_event_name_autogeneration(clear_meta):

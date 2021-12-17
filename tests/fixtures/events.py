@@ -1,16 +1,16 @@
 import pytest
 
-from lib.messages import MessageType
-from lib.events import EventType
-from lib.commands import CommandType
+from lib.messages import MessageMeta
+from lib.events import EventMeta
+from lib.commands import CommandMeta
 
 
 @pytest.fixture()
 def clear_meta():
-    MessageType._clear()
-    CommandType._clear()
-    EventType._clear()
+    MessageMeta._clear()
+    CommandMeta._clear()
+    EventMeta._clear()
     yield None
-    MessageType._clear()
-    CommandType._clear()
-    EventType._clear()
+    MessageMeta._clear()
+    CommandMeta._clear()
+    EventMeta._clear()

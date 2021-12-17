@@ -6,6 +6,10 @@ from lib.events import Event
 from lib.commands import Command
 from lib.exceptions import CQError
 
+# TODO: The whole shit of creating a class and a handler should be easy
+# to encapsulate in a class-based test case and reused everywhere. It's
+# a really repeated scenario.
+
 
 def test_bus_handles_commands(
     clear_meta,

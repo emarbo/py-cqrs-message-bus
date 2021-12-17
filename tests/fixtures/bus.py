@@ -2,7 +2,7 @@
 import pytest
 
 from lib.bus import MessageBus
-from lib.bus import TransactionManager
+from lib.databases import BasicTransactionManager
 
 
 @pytest.fixture()
@@ -11,7 +11,5 @@ def bus():
 
 
 @pytest.fixture()
-def transaction_manager(bus: MessageBus):
-    yield TransactionManager(bus)
-
-
+def basic_transaction_manager(bus: MessageBus):
+    yield BasicTransactionManager(bus)
