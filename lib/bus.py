@@ -3,21 +3,19 @@ import logging
 from collections import defaultdict
 
 from lib.events import Event
-from lib.events import EventHandler
 from lib.commands import Command
-from lib.commands import CommandHandler
 from lib.exceptions import DuplicatedCommandHandler
 from lib.exceptions import InvalidMessageType
 from lib.exceptions import InvalidMessage
 from lib.exceptions import MissingCommandHandler
 from lib.databases import TransactionManager
+from lib.types import EventHandler
+from lib.types import EventType
+from lib.types import CommandHandler
+from lib.types import CommandType
 
 
 logger = logging.getLogger()
-
-Handler = t.Union[CommandHandler, EventHandler]
-CommandType = t.Type[Command]
-EventType = t.Type[Event]
 
 
 class MessageBus:

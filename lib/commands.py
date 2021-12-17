@@ -1,18 +1,13 @@
-import typing as t
-from lib.messages import MessageType
+from lib.messages import MessageMeta
 from lib.messages import Message
 
 
-# Command handlers may return a result
-CommandHandler = t.Callable[["Command"], t.Any]
-
-
-class CommandType(MessageType):
+class CommandMeta(MessageMeta):
     """
     The Command metaclass
     """
 
-    _commands: dict[str, "CommandType"] = {}
+    _commands: dict[str, "CommandMeta"] = {}
 
     def __new__(cls, name, bases, dic):
         # super checks NAME correctness and may assign a default
@@ -28,9 +23,7 @@ class CommandType(MessageType):
         cls._commands = {}
 
 
-class Command(Message, metaclass=CommandType):
+class Command(Message, metaclass=CommandMeta):
     """
     The Command base class. To inherit and set the NAME.
     """
-
-    pass

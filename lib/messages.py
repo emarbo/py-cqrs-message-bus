@@ -3,7 +3,7 @@ from lib.exceptions import InvalidMessageName
 from lib.exceptions import DuplicatedMessageName
 
 
-class MessageType(type):
+class MessageMeta(type):
     """
     The Message metaclass.
 
@@ -11,7 +11,7 @@ class MessageType(type):
     Message.NAME type and collision check
     """
 
-    _messages: dict[str, "MessageType"] = {}
+    _messages: dict[str, "MessageMeta"] = {}
 
     def __new__(cls, name, bases, dic, **kw):
         cls._set_default_name(name, dic)
@@ -58,7 +58,7 @@ class MessageType(type):
         cls._messages = {}
 
 
-class Message(metaclass=MessageType):
+class Message(metaclass=MessageMeta):
     """
     The Message base class
     """

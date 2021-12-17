@@ -45,9 +45,9 @@ class TransactionManager:
         raise NotImplementedError()
 
 
-class SimpleTransactionManager(TransactionManager):
+class BasicTransactionManager(TransactionManager):
     """
-    The simplest transaction manager
+    Handles a single transaction
     """
 
     bus: "MessageBus"
@@ -232,14 +232,19 @@ class Transaction:
     """
 
     # CQ management
-    bus: MessageBus
+    bus: "MessageBus"
     events: list[Event]
 
     # Transaction management
     parent: t.Optional["Transaction"]
     uid: t.Optional[str]
 
-    def __init__(self, bus: MessageBus, parent: "Transaction" = None, uid: str = None):
+    def __init__(
+        self,
+        bus: "MessageBus",
+        parent: "Transaction" = None,
+        uid: str = None,
+    ):
         """
         :param uid: Optional identifier
         """

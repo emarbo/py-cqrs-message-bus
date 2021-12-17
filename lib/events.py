@@ -1,18 +1,13 @@
-import typing as t
-from lib.messages import MessageType
+from lib.messages import MessageMeta
 from lib.messages import Message
 
 
-# Event handlers returns nothing
-EventHandler = t.Callable[["Event"], None]
-
-
-class EventType(MessageType):
+class EventMeta(MessageMeta):
     """
     The Event metaclass
     """
 
-    _events: dict[str, "EventType"] = {}
+    _events: dict[str, "EventMeta"] = {}
 
     def __new__(cls, name, bases, dic):
         # super checks NAME correctness and may assign a default
@@ -28,8 +23,7 @@ class EventType(MessageType):
         cls._events = {}
 
 
-class Event(Message, metaclass=EventType):
+class Event(Message, metaclass=EventMeta):
     """
     The Event base class. To inherit and set the NAME.
     """
-    pass
