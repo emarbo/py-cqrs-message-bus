@@ -13,15 +13,15 @@ def test_simple_transaction_stack(
     """
     # Commits
     transaction_manager.begin()
-    assert len(bus.transaction_stack) == 1
+    assert len(bus.transaction_manager) == 1
     transaction_manager.commit()
-    assert len(bus.transaction_stack) == 0
+    assert len(bus.transaction_manager) == 0
 
     # Rollbacks
     transaction_manager.begin()
-    assert len(bus.transaction_stack) == 1
+    assert len(bus.transaction_manager) == 1
     transaction_manager.rollback()
-    assert len(bus.transaction_stack) == 0
+    assert len(bus.transaction_manager) == 0
 
 
 def test_events_are_triggered_on_commit(
@@ -48,7 +48,7 @@ def test_events_are_triggered_on_commit(
     event = MyEvent()
     bus.emit_event(event)
     # Then the event is queued and the handler is not called
-    assert bus.transaction_stack[-1].events == [event]
+    assert bus.transaction_manager[-1].events == [event]
     assert not called[0], "Event must be queued until transaction ends"
 
     # When the transaction is committed

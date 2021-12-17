@@ -11,7 +11,7 @@ class ConfigError(CQError):
 
 
 # --------------------------------------
-# Errors on Message declarations
+# Message definitions
 # --------------------------------------
 
 
@@ -28,7 +28,7 @@ class DuplicatedMessageName(ConfigError, TypeError):
 
 
 # --------------------------------------
-# Errors on handlers
+# Handler configuration
 # --------------------------------------
 
 
@@ -44,12 +44,29 @@ class MissingCommandHandler(ConfigError, RuntimeError):
     """
 
 
-# --------------------------------------
-# Errors on handlers
-# --------------------------------------
-
-
-class InvalidMessageType(CQError, TypeError):
+class InvalidMessageType(ConfigError, TypeError):
     """
-    The Bus only handles Message types
+    The Bus only handles Messages
+    """
+
+
+# --------------------------------------
+# Handling messages
+# --------------------------------------
+
+
+class InvalidMessage(CQError, TypeError):
+    """
+    The Bus only handles Messages
+    """
+
+
+# --------------------------------------
+# Databases
+# --------------------------------------
+
+
+class InvalidTransactionState(CQError):
+    """
+    Likely an internal error
     """
