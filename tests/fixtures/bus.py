@@ -1,8 +1,8 @@
-
 import pytest
 
 from lib.bus import MessageBus
-from lib.databases import BasicTransactionManager
+from lib.messages import Message
+from tests.utils.tracked_handler import tracked_handler
 
 
 @pytest.fixture()
@@ -11,5 +11,13 @@ def bus():
 
 
 @pytest.fixture()
-def basic_transaction_manager(bus: MessageBus):
-    yield BasicTransactionManager(bus)
+def handler():
+    """
+    A generic handler for Commands and Events
+    """
+
+    @tracked_handler
+    def handler(message: Message):
+        return None
+
+    return handler

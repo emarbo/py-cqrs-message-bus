@@ -1,131 +1,104 @@
+import pytest
+
 from lib.bus import MessageBus
 from lib.databases import BasicTransactionManager
 from lib.events import Event
+from tests.fixtures.scenarios.create_user import CommandHandler
+from tests.fixtures.scenarios.create_user import EventHandler
+from tests.fixtures.scenarios.create_user import UserCreatedEvent
 
 
-# TODO: Use a class-based test case that checks common stuff like connect/close,
-# begin/commit/rollback. Then subclass it and reuse for testing both TransactionManager
-# subclasses. It may even help with the Django stuff.
-
-
-def build(bus: MessageBus):
+@pytest.fixture(scope="module")
+def manager(bus: MessageBus):
     return BasicTransactionManager(bus)
 
 
-def test_commit(clear_meta, bus: MessageBus):
-    """
-    Test commit
-    """
-    manager = build(bus)
-    called = False
-
-    class NewUser(Event):
-        pass
-
-    def hander(_: NewUser):
-        nonlocal called
-        called = True
-
-    # Begin
-    manager.begin()
-    assert manager.in_transaction
-    # Emit an event that should not be called until commit
-    bus.emit_event(NewUser())
-    assert not called
-    # Commit
-    manager.commit()
-    assert called
-    assert not manager.in_transaction
-
-
-def test_rollback(clear_meta, bus: MessageBus):
-    """
-    Test commit
-    """
-    manager = build(bus)
-    called = False
-
-    class NewUser(Event):
-        pass
-
-    def hander(_: NewUser):
-        nonlocal called
-        called = True
-
-    # Begin
-    manager.begin()
-    assert manager.in_transaction
-    # Emit an event that should not be called until commit
-    bus.emit_event(NewUser())
-    assert not called
-    # Commit
-    manager.rollback()
-    assert not called
-    assert not manager.in_transaction
-
-
-def test_many_begin(clear_meta, bus: MessageBus):
-    """
-    Test multiple begin are allowed
-    """
-    manager = build(bus)
-
-    # Begin
-    manager.begin()
-    manager.begin()
-    manager.begin()
-    assert manager.in_transaction
-    manager.commit()
-    assert not manager.in_transaction
-
-
-def test_close(clear_meta, bus: MessageBus):
-    """
-    Test close doesn't trigger a commit and closes transaction
-    """
-    manager = build(bus)
-    called = False
-
-    class NewUser(Event):
-        pass
-
-    def hander(_: NewUser):
-        nonlocal called
-        called = True
-
-    # Begin
-    manager.begin()
-    assert manager.in_transaction
-    # Emit an event that should not be called until commit
-    bus.emit_event(NewUser())
-    assert not called
-    # Commit
-    manager.close()
-    assert not called
-    assert not manager.in_transaction
-
-
-def test_events_are_handled_immediately_outside_transaction(
-    clear_meta,
+def test_manager_fixture_links_bus(
     bus: MessageBus,
+    manager: BasicTransactionManager,
 ):
-    called = [False]
-
-    class MyEvent(Event):
-        pass
-
-    def event_hander(_: MyEvent):
-        called[0] = True
-
-    # Given a bus configured to handle MyEvent
-    bus.subscribe_event(MyEvent, event_hander)
-    # When an event is emitted outside a transaction
-    bus.emit_event(MyEvent())
-    # Then the event is handled immediately
-    assert called[0], "Events must be handled immediately outside transactions"
+    assert manager.bus is bus
 
 
-def test_nested_transactions_trigger_events_on_parent_commit(
+def test_begin_commit(
+    manager: BasicTransactionManager,
+):
+    manager.begin()
+    assert manager.in_transaction
+    manager.commit()
+    assert not manager.in_transaction
+
+
+def test_multiple_begins_are_allowed(
+    manager: BasicTransactionManager,
+):
+    manager.begin()
+    manager.begin()
+    manager.begin()
+    assert manager.in_transaction
+    manager.commit()
+    assert not manager.in_transaction
+
+
+def test_events_are_handled_after_commit(
+    bus: MessageBus,
+    manager: BasicTransactionManager,
+    user_created_handler: EventHandler,
+):
+    manager.begin()
+    assert manager.in_transaction
+    event = UserCreatedEvent("pepe")
+    bus.emit_event(event)
+    assert not user_created_handler.calls
+    manager.commit()
+    assert not manager.in_transaction
+    assert user_created_handler.calls
+    assert user_created_handler.calls[0] == event
+
+
+def test_events_are_discarded_on_rollback(
+    bus: MessageBus,
+    manager: BasicTransactionManager,
+    user_created_handler: EventHandler,
+):
+    manager.begin()
+    assert manager.in_transaction
+    event = UserCreatedEvent("pepe")
+    bus.emit_event(event)
+    assert not user_created_handler.calls
+    manager.rollback()
+    assert not manager.in_transaction
+    assert not user_created_handler.calls
+
+
+def test_events_are_discarded_on_close(
+    bus: MessageBus,
+    manager: BasicTransactionManager,
+    user_created_handler: EventHandler,
+):
+    manager.begin()
+    assert manager.in_transaction
+    event = UserCreatedEvent("pepe")
+    bus.emit_event(event)
+    assert not user_created_handler.calls
+    manager.close()
+    assert not manager.in_transaction
+    assert not user_created_handler.calls
+
+
+def test_events_are_handled_immediately_outside_a_transaction(
+    bus: MessageBus,
+    manager: BasicTransactionManager,
+    user_created_handler: EventHandler,
+):
+    assert manager.bus is bus
+    event = UserCreatedEvent("pepe")
+    bus.emit_event(event)
+    assert user_created_handler.calls
+    assert user_created_handler.calls[0] == event
+
+
+def test_checkpoints_events_are_hadled_on_transaction_commit(
     clear_meta,
     bus: MessageBus,
     manager: TransactionManager,

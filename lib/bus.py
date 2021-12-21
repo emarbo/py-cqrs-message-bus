@@ -9,13 +9,34 @@ from lib.exceptions import InvalidMessageType
 from lib.exceptions import InvalidMessage
 from lib.exceptions import MissingCommandHandler
 from lib.databases import TransactionManager
-from lib.types import EventHandler
-from lib.types import EventType
-from lib.types import CommandHandler
-from lib.types import CommandType
-
 
 logger = logging.getLogger()
+
+# --------------------------------------
+# Typings
+# --------------------------------------
+
+
+C = t.TypeVar("C", bound=Command)
+E = t.TypeVar("E", bound=Event)
+
+
+class CommandHandlers(t.Protocol):
+    def __setitem__(self, key: type[C], item: t.Callable[[C], t.Any]):
+        ...
+
+    def __getitem__(self, item: type[C]) -> t.Callable[[C], t.Any]:
+        ...
+
+
+class EventHandlers(t.Protocol):
+    def __getitem__(self, item: type[E]) -> list[t.Callable[[E], t.Any]]:
+        ...
+
+
+# --------------------------------------
+# Bus
+# --------------------------------------
 
 
 class MessageBus:
@@ -23,8 +44,8 @@ class MessageBus:
     An in-memory message bus.
     """
 
-    event_handlers: t.DefaultDict[str, list[EventHandler]]
-    command_handlers: dict[str, CommandHandler]
+    event_handlers: EventHandlers
+    command_handlers: CommandHandlers
 
     transaction_manager: t.Optional["TransactionManager"]
 
@@ -33,36 +54,36 @@ class MessageBus:
         self.command_handlers = {}
         self.transaction_manager = None
 
-    def subscribe_event(self, event: EventType, handler: EventHandler):
+    def subscribe_event(self, cls: type[E], handler: t.Callable[[E], t.Any]) -> None:
         """
         Subscribe to an event type. An event may have multiple handlers
 
         :raises InvalidMessageType:
         """
-        if not issubclass(event, Event):
-            raise InvalidMessageType(f"This is not an event class: '{event}'")
-        self.event_handlers[event.NAME].append(handler)
+        if not issubclass(cls, Event):
+            raise InvalidMessageType(f"This is not an event class: '{cls}'")
+        self.event_handlers[cls].append(handler)
 
-    def subscribe_command(self, command: CommandType, handler: CommandHandler):
+    def subscribe_command(self, cls: type[C], handler: t.Callable[[C], t.Any]) -> None:
         """
         Set the command handler for this command. Only one handler allowed.
 
         :raises InvalidMessageType:
         :raises ConfigError: if there is already a handler
         """
-        if not issubclass(command, Command):
-            raise InvalidMessageType(f"This is not a command class: '{command}'")
+        if not issubclass(cls, Command):
+            raise InvalidMessageType(f"This is not a command class: '{cls}'")
         try:
-            current_handler = self.command_handlers[command.NAME]
+            current_handler = self.command_handlers[cls]
         except KeyError:
-            self.command_handlers[command.NAME] = handler
+            self.command_handlers[cls] = handler
         else:
             raise DuplicatedCommandHandler(
-                f"Duplicated handler for command '{command}'. "
+                f"Duplicated handler for command '{cls}'. "
                 f"The handler '{handler}' overrides the current '{current_handler}'"
             )
 
-    def handle_command(self, command: Command) -> t.Any:
+    def handle_command(self, command: C) -> t.Any:
         """
         Triggers the command handler. Handler exceptions are propagated
 
@@ -73,14 +94,14 @@ class MessageBus:
             raise InvalidMessage(f"This is not an command: '{command}'")
 
         try:
-            handler = self.command_handlers[command.NAME]
+            handler = self.command_handlers[type(command)]
         except KeyError:
             raise MissingCommandHandler(f"Missing handler for command: '{command}'")
 
         logger.debug(f"Handling command '{command}': calling '{handler}'")
         return handler(command)
 
-    def emit_event(self, event: Event) -> None:
+    def emit_event(self, event: E) -> None:
         """
         Emit an event. If there's no running transaction, it's handled immediately.
 
@@ -94,11 +115,11 @@ class MessageBus:
         else:
             self._handle_event(event)
 
-    def _handle_event(self, event: Event) -> None:
+    def _handle_event(self, event: E) -> None:
         """
         Triggers the event handlers. Handler exceptions are captured and error-logged.
         """
-        handlers = self.event_handlers[event.NAME][:]
+        handlers = self.event_handlers[type(event)][:]
         logger.debug(f"Handling event '{event}': {len(handlers)} handlers")
 
         for handler in handlers:

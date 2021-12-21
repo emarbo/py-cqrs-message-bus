@@ -5,7 +5,7 @@ from lib.events import EventMeta
 from lib.commands import CommandMeta
 
 
-@pytest.fixture()
+@pytest.fixture(autouse=True)
 def clear_meta():
     MessageMeta._clear()
     CommandMeta._clear()

@@ -7,7 +7,7 @@ from lib.events import EventMeta
 from lib.exceptions import CQError
 
 
-def test_events_are_registered(clear_meta):
+def test_events_are_registered():
     """
     Test events are registered in the EventType metaclass
     """
@@ -19,7 +19,7 @@ def test_events_are_registered(clear_meta):
     assert MyEvent is MessageMeta._messages["MyEvent"]
 
 
-def test_event_name_autogeneration(clear_meta):
+def test_event_name_autogeneration():
     """
     Test a NAME is automatically generated when not defined
     """
@@ -32,7 +32,7 @@ def test_event_name_autogeneration(clear_meta):
     assert MyEvent.NAME.endswith(".MyEvent")
 
 
-def test_name_collision_raises_exception(clear_meta):
+def test_name_collision_raises_exception():
     """
     Two events with the same name raises an Exception
     """
@@ -46,7 +46,7 @@ def test_name_collision_raises_exception(clear_meta):
             NAME = "MyEvent"
 
 
-def test_events_can_be_dataclasses(clear_meta):
+def test_events_can_be_dataclasses():
     """
     Test events can be dataclasses
     """

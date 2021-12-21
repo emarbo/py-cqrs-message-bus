@@ -2,9 +2,6 @@ import typing as t
 import logging
 
 from lib.events import Event
-from lib.events import EventHandler
-from lib.commands import Command
-from lib.commands import CommandHandler
 from lib.exceptions import InvalidTransactionState
 
 if t.TYPE_CHECKING:
@@ -12,10 +9,6 @@ if t.TYPE_CHECKING:
 
 
 logger = logging.getLogger()
-
-Handler = t.Union[CommandHandler, EventHandler]
-CommandType = t.Type[Command]
-EventType = t.Type[Event]
 
 
 class TransactionManager:
@@ -55,6 +48,7 @@ class BasicTransactionManager(TransactionManager):
 
     def __init__(self, bus: "MessageBus"):
         self.bus = bus
+        self.bus.transaction_manager = self
         self.transaction = None
 
     @property
@@ -100,6 +94,7 @@ class SqlTransactionManager(TransactionManager):
 
     def __init__(self, bus: "MessageBus"):
         self.bus = bus
+        self.bus.transaction_manager = self
         self.stack = []
         self.connected = False
         self.autocommit = False  # PEP 249 default
