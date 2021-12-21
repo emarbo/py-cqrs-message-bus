@@ -21,7 +21,7 @@ C = t.TypeVar("C", bound=Command)
 E = t.TypeVar("E", bound=Event)
 
 
-class CommandHandlers(t.Protocol):
+class CommandHandlers(t.Protocol):  # pragma: no cover
     def __setitem__(self, key: type[C], item: t.Callable[[C], t.Any]):
         ...
 
@@ -29,7 +29,7 @@ class CommandHandlers(t.Protocol):
         ...
 
 
-class EventHandlers(t.Protocol):
+class EventHandlers(t.Protocol):  # pragma: no cover
     def __getitem__(self, item: type[E]) -> list[t.Callable[[E], t.Any]]:
         ...
 
