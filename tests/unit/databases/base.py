@@ -55,7 +55,7 @@ class _TestEventHandling(t.Generic[M]):
     Common open/close transactions
     """
 
-    def test_events_are_handled_after_commit(
+    def test_events_are_handled_on_commit(
         self,
         bus: MessageBus,
         manager: M,

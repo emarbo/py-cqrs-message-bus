@@ -22,6 +22,7 @@ class CqbusDjangoTransactionBridge(BaseDatabaseWrapper):
     Link Django database transactions to the SqlTransactionManager
     """
 
+    cq_bus: t.Optional[MessageBus]
     cq_transaction_manager: t.Optional[SqlTransactionManager]
     cq_exiting_atomic: bool
     cq_run_after_commit_hook_on_atomic_exit: bool
@@ -35,12 +36,14 @@ class CqbusDjangoTransactionBridge(BaseDatabaseWrapper):
                 "Call patch_django_atomic before using this mixin"
             )
 
+        self.cq_bus = None
         self.cq_transaction_manager = None
         self.cq_exiting_atomic = False
         self.cq_run_after_commit_hook_on_atomic_exit = False
 
     def bind_cqbus(self, bus: "MessageBus"):
         # The transaction manager now tread-local as
+        self.cq_bus = bus
         self.cq_transaction_manager = SqlTransactionManager(bus)
         self.cq_transaction_manager.set_autocommit(self.autocommit)
         # Track the current state
@@ -66,7 +69,7 @@ class CqbusDjangoTransactionBridge(BaseDatabaseWrapper):
             return
 
         # Preventively, disable this. See comments bellow
-        self.run_commit_hooks_on_set_autocommit_on = False
+        self.cq_run_after_commit_hook_on_atomic_exit = False
         super().commit()
         # We could call :method:`after_commit_hook` here if it wasn't for
         # the Atomic management of the internal variables. When Atomic calls
@@ -92,7 +95,7 @@ class CqbusDjangoTransactionBridge(BaseDatabaseWrapper):
             # When used in the not recommended AUTOCOMMIT off, we still need to
             # wait the end of Atomic.__exit__ because the :attr:`in_atomic_block`
             # still needs to be restored.
-            self.run_commit_hooks_on_set_autocommit_on = True
+            self.cq_run_after_commit_hook_on_atomic_exit = True
 
     def after_commit_hook(self):
         """
@@ -140,7 +143,7 @@ def patch_django_atomic():
     Atomic.cq_patched = True
     Atomic.__original_exit__ = Atomic.__exit__
 
-    def __patched_exit__(self):
+    def __patched_exit__(self, exc_type, exc_value, traceback):
         connection: BaseDatabaseWrapper = get_connection(self.using)
 
         # Not of our business
@@ -152,7 +155,7 @@ def patch_django_atomic():
         connection: CqbusDjangoTransactionBridge
         # Flag the state
         connection.cq_exiting_atomic = True
-        self.__original_exit__(self)
+        self.__original_exit__(exc_type, exc_value, traceback)
         connection.cq_exiting_atomic = False
         # Launch hook if needed
         if connection.cq_run_after_commit_hook_on_atomic_exit:

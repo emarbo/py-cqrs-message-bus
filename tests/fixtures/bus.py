@@ -8,7 +8,7 @@ from tests.utils.tracked_handler import tracked_handler
 
 @pytest.fixture()
 def bus():
-    yield MessageBus()
+    return MessageBus()
 
 
 @pytest.fixture()
