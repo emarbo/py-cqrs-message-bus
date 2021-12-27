@@ -4,9 +4,9 @@ from django.db.backends.base.base import BaseDatabaseWrapper
 from django.db.transaction import Atomic
 from django.db.transaction import get_connection
 
-from lib.bus import MessageBus
-from lib.exceptions import ConfigError
-from lib.databases import SqlTransactionManager
+from cq.bus import MessageBus
+from cq.databases import SqlTransactionManager
+from cq.exceptions import ConfigError
 
 
 class CqbusDjangoConfigError(ConfigError):

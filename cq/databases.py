@@ -1,11 +1,11 @@
-import typing as t
 import logging
+import typing as t
 
-from lib.events import Event
-from lib.exceptions import InvalidTransactionState
+from cq.events import Event
+from cq.exceptions import InvalidTransactionState
 
 if t.TYPE_CHECKING:
-    from lib.bus import MessageBus
+    from cq.bus import MessageBus
 
 
 logger = logging.getLogger()

@@ -1,5 +1,5 @@
-from lib.messages import MessageMeta
-from lib.messages import Message
+from cq.messages import Message
+from cq.messages import MessageMeta
 
 
 class CommandMeta(MessageMeta):

@@ -1,10 +1,10 @@
 import pytest
 
-from lib.bus import MessageBus
-from lib.exceptions import CQError
+from cq.bus import MessageBus
+from cq.exceptions import CQError
 from tests.fixtures.scenarios.create_user import CommandHandler
-from tests.fixtures.scenarios.create_user import EventHandler
 from tests.fixtures.scenarios.create_user import CreateUserCommand
+from tests.fixtures.scenarios.create_user import EventHandler
 from tests.fixtures.scenarios.create_user import UserCreatedEvent
 
 

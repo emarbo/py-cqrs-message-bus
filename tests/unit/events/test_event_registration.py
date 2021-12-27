@@ -1,10 +1,11 @@
-import pytest
 from dataclasses import dataclass
 
-from lib.messages import MessageMeta
-from lib.events import Event
-from lib.events import EventMeta
-from lib.exceptions import CQError
+import pytest
+
+from cq.events import Event
+from cq.events import EventMeta
+from cq.exceptions import CQError
+from cq.messages import MessageMeta
 
 
 def test_events_are_registered():

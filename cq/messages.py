@@ -1,6 +1,7 @@
 import typing as t
-from lib.exceptions import InvalidMessageName
-from lib.exceptions import DuplicatedMessageName
+
+from cq.exceptions import DuplicatedMessageName
+from cq.exceptions import InvalidMessageName
 
 
 class MessageMeta(type):

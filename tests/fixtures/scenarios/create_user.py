@@ -1,13 +1,12 @@
-import pytest
-import typing as t
 from dataclasses import dataclass
 
-from lib.bus import MessageBus
-from lib.commands import Command
-from lib.events import Event
-from tests.utils.tracked_handler import tracked_handler
-from tests.utils.tracked_handler import TrackedHandler
+import pytest
 
+from cq.bus import MessageBus
+from cq.commands import Command
+from cq.events import Event
+from tests.utils.tracked_handler import TrackedHandler
+from tests.utils.tracked_handler import tracked_handler
 
 # --------------------------------------
 # Messages definition
@@ -54,6 +53,7 @@ def user_created_handler(bus: MessageBus) -> EventHandler:
     """
     Dumb handler
     """
+
     @tracked_handler
     def user_created_handler(event: "UserCreatedEvent"):
         return

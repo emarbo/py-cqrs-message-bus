@@ -1,11 +1,11 @@
-import pytest
 import typing as t
 
-from lib.bus import MessageBus
-from lib.databases import TransactionManager
+import pytest
+
+from cq.bus import MessageBus
+from cq.databases import TransactionManager
 from tests.fixtures.scenarios.create_user import EventHandler
 from tests.fixtures.scenarios.create_user import UserCreatedEvent
-
 
 M = t.TypeVar("M", bound=TransactionManager)
 

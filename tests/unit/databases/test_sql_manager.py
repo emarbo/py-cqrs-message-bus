@@ -1,12 +1,11 @@
 import pytest
 
-from lib.bus import MessageBus
-from lib.databases import SqlTransactionManager
+from cq.bus import MessageBus
+from cq.databases import SqlTransactionManager
 from tests.fixtures.scenarios.create_user import EventHandler
 from tests.fixtures.scenarios.create_user import UserCreatedEvent
-
-from tests.unit.databases.base import _TestTransactions
 from tests.unit.databases.base import _TestEventHandling
+from tests.unit.databases.base import _TestTransactions
 
 
 class TestSqlTransactions(_TestTransactions[SqlTransactionManager]):

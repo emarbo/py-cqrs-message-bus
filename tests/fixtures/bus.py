@@ -1,9 +1,9 @@
 import pytest
 
-from lib.bus import MessageBus
-from lib.messages import Message
-from tests.utils.tracked_handler import tracked_handler
+from cq.bus import MessageBus
+from cq.messages import Message
 from tests.utils.tracked_handler import TrackedHandler
+from tests.utils.tracked_handler import tracked_handler
 
 
 @pytest.fixture()

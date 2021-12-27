@@ -1,14 +1,14 @@
-import typing as t
 import logging
+import typing as t
 from collections import defaultdict
 
-from lib.events import Event
-from lib.commands import Command
-from lib.exceptions import DuplicatedCommandHandler
-from lib.exceptions import InvalidMessageType
-from lib.exceptions import InvalidMessage
-from lib.exceptions import MissingCommandHandler
-from lib.databases import TransactionManager
+from cq.commands import Command
+from cq.databases import TransactionManager
+from cq.events import Event
+from cq.exceptions import DuplicatedCommandHandler
+from cq.exceptions import InvalidMessage
+from cq.exceptions import InvalidMessageType
+from cq.exceptions import MissingCommandHandler
 
 logger = logging.getLogger()
 
