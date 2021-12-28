@@ -50,11 +50,11 @@ class CqbusDjangoTransactionBridge(BaseDatabaseWrapper):
         if self.connection:
             self.cq_transaction_manager.connect()
             for sid in self.savepoint_ids:
-                if sid is not None:  # Filter faked savepoints
+                if sid is not None:  # Discard faked savepoints
                     self.cq_transaction_manager.begin_savepoint(sid)
 
-    def set_autocommit(self, autocommit: bool, **kwargs):
-        super().set_autocommit(autocommit, **kwargs)
+    def set_autocommit(self, autocommit: bool, **kw):
+        super().set_autocommit(autocommit, **kw)
         if self.cq_transaction_manager:
             self.cq_transaction_manager.set_autocommit(autocommit)
 
@@ -101,6 +101,7 @@ class CqbusDjangoTransactionBridge(BaseDatabaseWrapper):
         """
         This hook is called after every successful commit.
         """
+        self.cq_run_after_commit_hook_on_atomic_exit = False
         self.cq_transaction_manager.commit()
 
     def rollback(self):
@@ -119,12 +120,12 @@ class CqbusDjangoTransactionBridge(BaseDatabaseWrapper):
             self.cq_transaction_manager.begin_savepoint(sid)
         return sid
 
-    def savepoint_commit(self, sid) -> str:
+    def savepoint_commit(self, sid):
         super().savepoint_commit(sid)
         if self.cq_transaction_manager and self._savepoint_allowed():
             self.cq_transaction_manager.commit_savepoint(sid)
 
-    def savepoint_rollback(self, sid) -> str:
+    def savepoint_rollback(self, sid):
         super().savepoint_rollback(sid)
         if self.cq_transaction_manager and self._savepoint_allowed():
             self.cq_transaction_manager.rollback_savepoint(sid)

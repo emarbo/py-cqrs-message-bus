@@ -108,6 +108,8 @@ class SqlTransactionManager(TransactionManager):
         self.stack[-1].queue_event(event)
 
     def connect(self):
+        if self.connected:
+            return
         self.connected = True
         self.stack = []
         # Same reasons as the comments in :method:`set_autocommit`.
