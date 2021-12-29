@@ -14,7 +14,7 @@ class TestBasicTransactions(_TestTransactions[BasicTransactionManager]):
         return BasicTransactionManager(bus)
 
 
-class TestEventHandliing(_TestEventHandling[BasicTransactionManager]):
+class TestEventHandling(_TestEventHandling[BasicTransactionManager]):
     @pytest.fixture
     def manager(self, bus: MessageBus):
         return BasicTransactionManager(bus)

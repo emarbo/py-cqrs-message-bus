@@ -34,12 +34,8 @@ class BaseTest:
             ("sqlite", False),
             ("sqlite", True),
         ],
-        ids=[
-            "postgres,autocommit:OFF",
-            "postgres,autocommit:ON",
-            "sqlite,autocommit:OFF",
-            "sqlite,autocommit:ON",
-        ],
+        # e.g. "postgres,autocommit:OFF"
+        ids=lambda p: f"{p[0]},autocommit:{p[1] and 'ON' or 'OFF'}"
     )
     def connection(self, request, bus: MessageBus):
         self.DB = request.param[0]
