@@ -126,7 +126,7 @@ class SqlTransactionManager(TransactionManager):
         # If autocommit is disabled and no transaction was active,
         # the database will automatically open a transaction (BEGIN)
         # after receiving the first statement. To emulate this behavior
-        # we implicitly open a transaction in the conditions are met.
+        # we implicitly open a transaction if the conditions are met.
         #
         # SQLite doesn't open a transaction implicitly but we dont
         # care if begin() is called twice.
