@@ -38,6 +38,32 @@ class EventHandlers(t.Protocol):  # pragma: no cover
 # Bus
 # --------------------------------------
 
+#
+# TODO: Allow mixing in-process and remote (e.g. Kafka) handlers for
+# both commands and events.
+#
+# An in-process command handler should be able to call a remote
+# command handler and events emitted by the in-process commands
+# should also be emitted on Kafka (if it's configured to do so).
+#
+# The event handler is actually who knows if it should be run
+# synchronously or asynchronously. For instance, there might be
+# many reactions to the UserCreatedEvent, some of them might need
+# to run synchronously (e.g., created some auxiliary tables) and
+# others (e.g., sending an email) can run remotely later.
+#
+# For every process there must be a single MessageBus that handles
+# the transaction/events stuff but it could have multiple
+# "handler providers" plugged that rely on different technologies
+# to handler commands and events. In other words, the current
+# MessageBus implemetation could be split in two classes:
+# the MessageBus itself and an InProcessBusProvider. The MessageBus
+# could have a list of providers that may handle a command, the
+# first one able to do so handles it. For the events, there's even
+# simpler as an event supports infinite handlers. Bear in mind that
+# the same? configuration could be used by an HTTP worker and by a
+# Kafka consumer... don't queue the same event infinitely.
+#
 
 class MessageBus:
     """
