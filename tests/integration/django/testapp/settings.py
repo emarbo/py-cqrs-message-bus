@@ -54,11 +54,13 @@ DATABASES = {
         "PASSWORD": "postgres",
         "HOST": "localhost",
         "PORT": 5432,
+        "MESSAGE_BUS": "tests.integration.django.testapp.bus:bus",
     },
     "sqlite": {
         "ENGINE": "cq.contrib.django.backends.sqlite3",
         "NAME": "db.sqlite3",
-    }
+        "MESSAGE_BUS": "tests.integration.django.testapp.bus:bus",
+    },
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

@@ -35,9 +35,9 @@ class BaseTest:
             ("sqlite", True),
         ],
         # e.g. "postgres,autocommit:OFF"
-        ids=lambda p: f"{p[0]},autocommit:{p[1] and 'ON' or 'OFF'}"
+        ids=lambda p: f"{p[0]},autocommit:{p[1] and 'ON' or 'OFF'}",
     )
-    def connection(self, request, bus: MessageBus):
+    def connection(self, request):
         self.DB = request.param[0]
         self.autocommit = request.param[1]
         # Clean up state from previous tests
@@ -45,7 +45,7 @@ class BaseTest:
         connection.close()
         connection.set_autocommit(self.autocommit)
         # Bind the connection to the bus
-        connection.bind_cqbus(bus)
+        # connection.bind_cqbus(bus)
         # Bind models to the connection
         User.objects.set_db(self.DB)
         return connection
@@ -129,6 +129,14 @@ class TestDjangoIntegration(BaseTest):
     Test bus/django transactions integration
     """
 
+    def test_bus_is_bind(
+        self, connection: CqbusDjangoTransactionBridge, bus: MessageBus
+    ):
+        """
+        Bus should be automatically bind through DATABASES->MESSAGE_BUS option
+        """
+        assert connection.cq_bus is bus
+
     def test_bus_tracks_transaction_stack(
         self,
         bus: MessageBus,
@@ -143,20 +151,20 @@ class TestDjangoIntegration(BaseTest):
         else:
             offset = 1
             assert manager.in_transaction
-        assert len(manager.stack) == offset
+        assert len(manager.context.stack) == offset
 
         with self.atomic():
-            assert len(manager.stack) == 1 + offset
+            assert len(manager.context.stack) == 1 + offset
             with self.atomic():
-                assert len(manager.stack) == 2 + offset
+                assert len(manager.context.stack) == 2 + offset
                 with self.atomic(savepoint=False):
-                    assert len(manager.stack) == 2 + offset
+                    assert len(manager.context.stack) == 2 + offset
 
         if self.autocommit:
             assert not manager.in_transaction
         else:
             assert manager.in_transaction
-        assert len(manager.stack) == offset
+        assert len(manager.context.stack) == offset
 
     def test_events_are_handled_on_commit(
         self,

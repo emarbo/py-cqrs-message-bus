@@ -65,6 +65,7 @@ class EventHandlers(t.Protocol):  # pragma: no cover
 # Kafka consumer... don't queue the same event infinitely.
 #
 
+
 class MessageBus:
     """
     An in-memory message bus.
@@ -108,6 +109,13 @@ class MessageBus:
                 f"Duplicated handler for command '{cls}'. "
                 f"The handler '{handler}' overrides the current '{current_handler}'"
             )
+
+    def _clear(self):
+        """
+        Clear handlers. For testing purposes.
+        """
+        self.command_handlers = {}
+        self.event_handlers = defaultdict(list)
 
     def handle_command(self, command: C) -> t.Any:
         """
