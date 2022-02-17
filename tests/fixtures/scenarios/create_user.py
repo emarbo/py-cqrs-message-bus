@@ -5,8 +5,8 @@ import pytest
 from cq.bus import MessageBus
 from cq.commands import Command
 from cq.events import Event
-from tests.utils.tracked_handler import TrackedHandler
-from tests.utils.tracked_handler import tracked_handler
+from cq.utils.tracked_handler import TrackedHandler
+from cq.utils.tracked_handler import tracked_handler
 
 # --------------------------------------
 # Messages definition

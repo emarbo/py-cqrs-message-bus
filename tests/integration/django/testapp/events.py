@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from cq.events import Event
-from tests.utils.tracked_handler import tracked_handler
+from cq.utils.tracked_handler import tracked_handler
 
 
 @dataclass

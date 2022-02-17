@@ -2,7 +2,7 @@ import typing as t
 from dataclasses import dataclass
 
 from cq.commands import Command
-from tests.utils.tracked_handler import tracked_handler
+from cq.utils.tracked_handler import tracked_handler
 from tests.integration.django.testapp.models import User
 
 

@@ -2,8 +2,8 @@ import typing as t
 import pytest
 from tests.integration.django.testapp.events import UserCreatedEvent
 from tests.integration.django.testapp.bus import bus as _bus
-from tests.utils.tracked_handler import tracked_handler
-from tests.utils.tracked_handler import TrackedHandler
+from cq.utils.tracked_handler import tracked_handler
+from cq.utils.tracked_handler import TrackedHandler
 from tests.integration.django.testapp.commands import CreateUserCommand
 from cq.bus import MessageBus
 
