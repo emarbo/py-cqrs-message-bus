@@ -70,3 +70,20 @@ class InvalidTransactionState(CQError):
     """
     Likely an internal error
     """
+
+
+# --------------------------------------
+# Unit of Work
+# --------------------------------------
+
+
+class UowContextRequired(CQError):
+    """
+    Code is using the UnitOfWork outside the context or
+    the begin/commit/rollback calls are unpaired.
+
+        >>> uow = UnitOfWork(bus)
+        >>> with uow:
+        ...     uow.emit_event(event)  # Good
+        ... uow.emit_event(event)  # Bad
+    """

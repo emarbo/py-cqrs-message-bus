@@ -1,11 +1,9 @@
 import logging
-import threading
 import typing as t
 from collections import defaultdict
 
-from cq.commands import Command
-from cq.transactions import RunningContext
-from cq.events import Event
+from cq.bus.commands import Command
+from cq.bus.events import Event
 from cq.exceptions import DuplicatedCommandHandler
 from cq.exceptions import InvalidMessage
 from cq.exceptions import InvalidMessageType
@@ -39,33 +37,6 @@ class EventHandlers(t.Protocol):  # pragma: no cover
 # Bus
 # --------------------------------------
 
-#
-# TODO: Allow mixing in-process and remote (e.g. Kafka) handlers for
-# both commands and events.
-#
-# An in-process command handler should be able to call a remote
-# command handler and events emitted by the in-process commands
-# should also be emitted on Kafka (if it's configured to do so).
-#
-# The event handler is actually who knows if it should be run
-# synchronously or asynchronously. For instance, there might be
-# many reactions to the UserCreatedEvent, some of them might need
-# to run synchronously (e.g., created some auxiliary tables) and
-# others (e.g., sending an email) can run remotely later.
-#
-# For every process there must be a single MessageBus that handles
-# the transaction/events stuff but it could have multiple
-# "handler providers" plugged that rely on different technologies
-# to handler commands and events. In other words, the current
-# MessageBus implemetation could be split in two classes:
-# the MessageBus itself and an InProcessBusProvider. The MessageBus
-# could have a list of providers that may handle a command, the
-# first one able to do so handles it. For the events, there's even
-# simpler as an event supports infinite handlers. Bear in mind that
-# the same? configuration could be used by an HTTP worker and by a
-# Kafka consumer... don't queue the same event infinitely.
-#
-
 
 class MessageBus:
     """
@@ -78,15 +49,6 @@ class MessageBus:
     def __init__(self):
         self.event_handlers = defaultdict(list)
         self.command_handlers = {}
-        self._proxy = threading.local()
-
-    @property
-    def running_context(self) -> RunningContext:
-        try:
-            return self._proxy.running_context
-        except AttributeError:
-            self._proxy.running_context = RunningContext(self)
-            return self._proxy.running_context
 
     def subscribe_event(self, cls: type[E], handler: t.Callable[[E], t.Any]) -> None:
         """
@@ -117,13 +79,6 @@ class MessageBus:
                 f"The handler '{handler}' overrides the current '{current_handler}'"
             )
 
-    def _clear(self):
-        """
-        Clear handlers. For testing purposes.
-        """
-        self.command_handlers = {}
-        self.event_handlers = defaultdict(list)
-
     def handle_command(self, command: C) -> t.Any:
         """
         Triggers the command handler. Handler exceptions are propagated
@@ -141,16 +96,6 @@ class MessageBus:
 
         logger.debug(f"Handling command '{command}': calling '{handler}'")
         return handler(command)
-
-    def emit_event(self, event: E) -> None:
-        """
-        Emit an event. If there's no running transaction, it's handled immediately.
-
-        :raises InvalidMessage: if this isn't an Event
-        """
-        if not isinstance(event, Event):
-            raise InvalidMessage(f"This is not an event: '{event}'")
-        self.running_context.emit_event(event)
 
     def _handle_event(self, event: E) -> None:
         """
