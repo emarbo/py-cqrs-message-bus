@@ -141,8 +141,8 @@ class TestDjangoIntegration(BaseTest):
         self,
         bus: MessageBus,
     ):
-        assert isinstance(bus.transaction_manager, SqlTransactionManager)
-        manager: SqlTransactionManager = bus.transaction_manager
+        assert isinstance(bus.running_context, SqlTransactionManager)
+        manager: SqlTransactionManager = bus.running_context
 
         # In autocommit OFF, there's always a transaction is progress
         if self.autocommit:

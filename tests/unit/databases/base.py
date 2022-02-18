@@ -21,7 +21,7 @@ class _TestTransactions(t.Generic[M]):
 
     def test_manager_links_bus(self, bus: MessageBus, manager: M):
         assert manager.bus is bus
-        assert bus.transaction_manager is manager
+        assert bus.running_context is manager
 
     def test_begin_and_commit(self, manager: M):
         manager.begin()

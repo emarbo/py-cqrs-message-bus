@@ -1,9 +1,10 @@
 import logging
+import threading
 import typing as t
 from collections import defaultdict
 
 from cq.commands import Command
-from cq.databases import TransactionManager
+from cq.transactions import RunningContext
 from cq.events import Event
 from cq.exceptions import DuplicatedCommandHandler
 from cq.exceptions import InvalidMessage
@@ -74,12 +75,18 @@ class MessageBus:
     event_handlers: EventHandlers
     command_handlers: CommandHandlers
 
-    transaction_manager: t.Optional["TransactionManager"]
-
     def __init__(self):
         self.event_handlers = defaultdict(list)
         self.command_handlers = {}
-        self.transaction_manager = None
+        self._proxy = threading.local()
+
+    @property
+    def running_context(self) -> RunningContext:
+        try:
+            return self._proxy.running_context
+        except AttributeError:
+            self._proxy.running_context = RunningContext(self)
+            return self._proxy.running_context
 
     def subscribe_event(self, cls: type[E], handler: t.Callable[[E], t.Any]) -> None:
         """
@@ -143,11 +150,7 @@ class MessageBus:
         """
         if not isinstance(event, Event):
             raise InvalidMessage(f"This is not an event: '{event}'")
-
-        if self.transaction_manager and self.transaction_manager.in_transaction:
-            self.transaction_manager.queue_event(event)
-        else:
-            self._handle_event(event)
+        self.running_context.emit_event(event)
 
     def _handle_event(self, event: E) -> None:
         """

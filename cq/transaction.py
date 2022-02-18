@@ -12,107 +12,7 @@ if t.TYPE_CHECKING:
 logger = logging.getLogger()
 
 
-class TransactionManager:
-
-    bus: "MessageBus"
-
-    def __init__(self, bus: "MessageBus"):
-        self.bus = bus
-
-    @property
-    def in_transaction(self) -> bool:
-        raise NotImplementedError()
-
-    def queue_event(self, event: Event):
-        raise NotImplementedError()
-
-    def begin(self):
-        raise NotImplementedError()
-
-    def commit(self):
-        raise NotImplementedError()
-
-    def rollback(self):
-        raise NotImplementedError()
-
-    def close(self):
-        raise NotImplementedError()
-
-
-class BasicTransactionContext:
-    """
-    A transaction context for the current connection.
-    """
-
-    transaction: t.Optional["Transaction"]
-
-    def __init__(self):
-        self.transaction = None
-
-    def __str__(self):
-        return f"transaction={self.transaction}"
-
-
-class BasicTransactionManager(TransactionManager):
-    """
-    Handles a single transaction. Transactions are thread-local.
-    """
-
-    bus: "MessageBus"
-    _context_proxy: threading.local
-
-    def __init__(self, bus: "MessageBus"):
-        self.bus = bus
-        self.bus.running_context = self
-        self._context_proxy = threading.local()
-
-    @property
-    def context(self) -> "BasicTransactionContext":
-        """
-        Thread-local context
-        """
-        try:
-            return self._context_proxy.context
-        except AttributeError:
-            self._context_proxy.context = BasicTransactionContext()
-            return self._context_proxy.context
-
-    @property
-    def in_transaction(self) -> bool:
-        return bool(self.context.transaction)
-
-    def queue_event(self, event: Event) -> None:
-        if not self.context.transaction:
-            raise InvalidTransactionState("No transaction in progress")
-        self.context.transaction.queue_event(event)
-
-    def begin(self):
-        if self.context.transaction:
-            logger.warning("There is already a transaction in progress")
-        else:
-            self.context.transaction = Transaction(self.bus)
-
-    def commit(self):
-        if not self.context.transaction:
-            raise InvalidTransactionState("No transaction in progress")
-        transaction = self.context.transaction
-        self.context.transaction = None
-        transaction.commit()
-
-    def rollback(self):
-        if not self.context.transaction:
-            raise InvalidTransactionState("No transaction in progress")
-        self.context.transaction = None
-
-    def close(self):
-        self.context.transaction = None
-
-
-class SqlTransactionContext:
-    """
-    A SQL transaction context for the current connection.
-    """
-
+class TransactionContext:
     stack: list["Transaction"]
     connected: bool
     autocommit: bool
@@ -130,9 +30,9 @@ class SqlTransactionContext:
         )
 
 
-class SqlTransactionManager(TransactionManager):
+class TransactionManager:
     """
-    A SQL transaction manager. Transactions are thread-local.
+    A transaction manager. Transactions are thread-local.
     """
 
     bus: "MessageBus"
@@ -145,14 +45,14 @@ class SqlTransactionManager(TransactionManager):
         self._context_proxy = threading.local()
 
     @property
-    def context(self) -> "SqlTransactionContext":
+    def context(self) -> "TransactionContext":
         """
         Thread-local context
         """
         try:
             return self._context_proxy.context
         except AttributeError:
-            self._context_proxy.context = SqlTransactionContext()
+            self._context_proxy.context = TransactionContext()
             return self._context_proxy.context
 
     @property
@@ -184,7 +84,7 @@ class SqlTransactionManager(TransactionManager):
         # after receiving the first statement. To emulate this behavior
         # we implicitly open a transaction if the conditions are met.
         #
-        # SQLite doesn't open a transaction implicitly but we dont
+        # ite doesn't open a transaction implicitly but we dont
         # care if begin() is called twice.
         if self.context.connected and not self.in_transaction and transition == (1, 0):
             self.begin()
@@ -253,7 +153,7 @@ class SqlTransactionManager(TransactionManager):
             self.context.stack.pop()
 
     def _get_savepoint(self, uid: str = None) -> t.Optional["Transaction"]:
-        # SQL SAVEPOINTS should be unique so we can safely iterate in this order
+        #  SAVEPOINTS should be unique so we can safely iterate in this order
         for transaction in self.context.stack:
             if transaction.uid == uid:
                 return transaction

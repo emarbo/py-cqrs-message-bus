@@ -68,14 +68,14 @@ class CqbusDjangoTransactionBridge(BaseDatabaseWrapper):
 
     def bind_cqbus(self, bus: "MessageBus"):
         # The manager is reused by all connections
-        if transaction_manager := bus.transaction_manager:
+        if transaction_manager := bus.running_context:
             if not isinstance(transaction_manager, SqlTransactionManager):
                 raise CqbusDjangoConfigError(
                     "The bus transaction_manager is not a SqlTransactionManager"
                 )
         else:
             transaction_manager = SqlTransactionManager(bus)
-            bus.transaction_manager = transaction_manager
+            bus.running_context = transaction_manager
 
         self.cq_bus = bus
         self.cq_transaction_manager = transaction_manager
