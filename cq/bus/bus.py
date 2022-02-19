@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from cq.bus.commands import Command
 from cq.bus.events import Event
+from cq.bus.messages import Message
 from cq.unit_of_work import UnitOfWork
 from cq.exceptions import DuplicatedCommandHandler
 from cq.exceptions import InvalidMessage
@@ -16,6 +17,16 @@ logger = logging.getLogger()
 # Typings
 # --------------------------------------
 
+#
+# TODO: Force callbacks' first argument type (command or event) but allow
+# arbitrary keyword arguments to implement Dependency Injection features.
+# Not all handlers need the current UnitOfWork and others might need
+# other global services to work (e.g. EmailsService) that could be
+# injected.
+#
+# Currently, Python 3.9 does not offer the abilities do to so. Will be
+# the new Python 3.10 features enough? Concatenate, Param, ...
+#
 
 UOW = t.TypeVar("UOW", bound=UnitOfWork)
 C = t.TypeVar("C", bound=Command)
