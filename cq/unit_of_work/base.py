@@ -2,9 +2,9 @@ import abc
 import typing as t
 
 from cq.exceptions import InvalidMessage
+from cq.bus.events import Event
 
 if t.TYPE_CHECKING:
-    from cq.bus.events import Event
     from cq.bus.bus import MessageBus
 
 
@@ -34,7 +34,7 @@ class UnitOfWork(abc.ABC):
     def __exit__(self, exc_type, exc_value, traceback):
         raise NotImplementedError()
 
-    def emit_event(self, event: "Event"):
+    def emit_event(self, event: Event):
         """
         :raises InvalidMessage: if this isn't an Event
         """
@@ -43,5 +43,5 @@ class UnitOfWork(abc.ABC):
         self._emit_event(event)
 
     @abc.abstractmethod
-    def _emit_event(self, event: "Event"):
+    def _emit_event(self, event: Event):
         raise NotImplementedError()

@@ -1,6 +1,23 @@
+# --------------------------------------
+# Base exceptions
+# --------------------------------------
+
+
+class CQBaseError(BaseException):
+    """
+    Uncatchable error
+    """
+
+
+class CQProgrammingError(CQBaseError, RuntimeError):
+    """
+    Uncatchable error. Code violates some invariant
+    """
+
+
 class CQError(Exception):
     """
-    Root exception
+    Library root exception
     """
 
 

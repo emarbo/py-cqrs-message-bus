@@ -25,6 +25,10 @@ class EventsCollector(t.Collection["Event"], abc.ABC):
     def extend(self, events: "EventsCollector") -> "Event":
         raise NotImplementedError()
 
+    @abc.abstractmethod
+    def clear(self):
+        raise NotImplementedError()
+
 
 class EventsFifo(EventsCollector):
     """
@@ -44,6 +48,9 @@ class EventsFifo(EventsCollector):
 
     def extend(self, events: "EventsCollector") -> "Event":
         self.queue.extend(events)
+
+    def clear(self):
+        self.queue = []
 
     def __len__(self):
         return len(self.queue)
@@ -80,6 +87,10 @@ class DedupeEventsFifo(EventsCollector):
     def extend(self, events: "EventsCollector") -> "Event":
         for event in events:
             self.push(event)
+
+    def clear(self):
+        self.queue = []
+        self.seen = set()
 
     def __len__(self):
         return len(self.queue)

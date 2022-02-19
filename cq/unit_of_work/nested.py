@@ -1,6 +1,6 @@
 import typing as t
 
-from cq.exceptions import UowContextRequired
+from cq.exceptions import CQProgrammingError, UowContextRequired
 from cq.unit_of_work.base import UnitOfWork
 from cq.unit_of_work.utils.events_collector import DedupeEventsFifo
 
@@ -27,9 +27,7 @@ class NestedUnitOfWork(UnitOfWork):
         self.stack = []
         self.events_collector_cls = events_collector_cls
 
-    def _emit_event(self, event: Event) -> None:
-        self._validate_context()
-        self.stack[-1].queue_event(event)
+    # Transaction methods
 
     def __enter__(self):
         self._begin()
@@ -42,23 +40,44 @@ class NestedUnitOfWork(UnitOfWork):
             self._rollback()
 
     def _begin(self):
-        parent = self.stack[-1] if self.stack else None
-        transaction = Transaction(self.bus, self.events_collector_cls(), parent)
+        transaction = Transaction(
+            self,
+            self.events_collector_cls(),
+            self.stack[-1] if self.stack else None,
+        )
         self.stack.append(transaction)
 
     def _commit(self):
         self._end().commit()
 
     def _rollback(self):
-        self._end()
+        self._end().rollback()
 
     def _end(self) -> "Transaction":
-        self._validate_context()
+        self._ensure_context()
         return self.stack.pop()
 
-    def _validate_context(self):
+    def _ensure_context(self):
         if not self.stack:
             raise UowContextRequired("No transaction in progress")
+
+    # Events methods
+
+    def _emit_event(self, event: "Event"):
+        """
+        Implementation of super().emit_event
+        """
+        self._ensure_context()
+        self.stack[-1].collect_event(event)
+
+    def _handle_events(self, events: t.Iterable["Event"]):
+        """
+        Called by the outermost Transaction on commit
+        """
+        if self.stack:
+            raise CQProgrammingError("This call should happen outside the context")
+        for event in events:
+            self.bus._handle_event(event)
 
 
 class Transaction:
@@ -72,29 +91,31 @@ class Transaction:
     instead of calling the handlers.
     """
 
-    bus: "MessageBus"
+    uow: "NestedUnitOfWork"
     events: "EventsCollector"
     parent: t.Optional["Transaction"]
 
     def __init__(
         self,
-        bus: "MessageBus",
+        uow: "NestedUnitOfWork",
         events: "EventsCollector",
         parent: "Transaction" = None,
     ):
-        self.bus = bus
+        self.uow = uow
         self.events = events
         self.parent = parent
 
-    def queue_event(self, event: Event):
-        self.events.push(event)
-
-    def queue_event_many(self, events: "EventsCollector"):
-        self.events.extend(events)
-
     def commit(self):
         if self.parent:
-            self.parent.queue_event_many(self.events)
+            self.parent.collect_event_many(self.events)
         else:
-            for event in self.events:
-                self.bus._handle_event(event)
+            self.uow._handle_events(self.events)
+
+    def rollback(self):
+        self.events.clear()
+
+    def collect_event(self, event: "Event"):
+        self.events.push(event)
+
+    def collect_event_many(self, events: "EventsCollector"):
+        self.events.extend(events)
