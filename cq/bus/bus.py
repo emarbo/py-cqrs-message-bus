@@ -130,3 +130,17 @@ class MessageBus:
                 handler(event, uow)
             except Exception:
                 logger.exception("Exception handling event '{event}'")
+
+    def clone(self) -> "MessageBus":
+        """
+        Returns a copy of itself with the same (detached) configuration
+        """
+        bus = type(self)()
+
+        for command_cls, handler in self.command_handlers.items():  # type:ignore
+            bus.subscribe_command(command_cls, handler)
+
+        for event_cls, handler in self.event_handlers.items():  # type:ignore
+            for event_handler in handler:
+                bus.subscribe_event(event_cls, event_handler)
+        return bus
