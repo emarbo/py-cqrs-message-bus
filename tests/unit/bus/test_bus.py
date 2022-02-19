@@ -1,6 +1,6 @@
 import pytest
-from cq.bus.bus import MessageBus
 
+from cq.bus.bus import MessageBus
 from cq.exceptions import MissingCommandHandler
 from cq.unit_of_work.base import UnitOfWork
 from tests.fixtures.scenarios.create_user import CommandHandler

@@ -1,13 +1,11 @@
-import typing as t
 import contextlib
+import typing as t
 from uuid import uuid4
 
 from cq.unit_of_work import UnitOfWork
-from tests.fixtures.scenarios.create_user import (
-    CommandHandler,
-    CreateUserCommand,
-    EventHandler,
-)
+from tests.fixtures.scenarios.create_user import CommandHandler
+from tests.fixtures.scenarios.create_user import CreateUserCommand
+from tests.fixtures.scenarios.create_user import EventHandler
 from tests.fixtures.scenarios.create_user import UserCreatedEvent
 
 UOW = t.TypeVar("UOW", bound=UnitOfWork)

@@ -1,13 +1,12 @@
 import typing as t
 from contextlib import contextmanager
 
+from django.db.transaction import DEFAULT_DB_ALIAS
 from django.db.transaction import atomic
 from django.db.transaction import get_connection
-from django.db.transaction import DEFAULT_DB_ALIAS
 
 from cq.unit_of_work.nested import NestedUnitOfWork
 from cq.unit_of_work.utils.events_collector import DedupeEventsFifo
-
 
 if t.TYPE_CHECKING:
     from cq.bus.bus import MessageBus

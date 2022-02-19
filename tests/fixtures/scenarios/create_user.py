@@ -9,8 +9,8 @@ from cq.utils.tracked_handler import TrackedHandler
 from cq.utils.tracked_handler import tracked_handler
 
 if t.TYPE_CHECKING:
-    from cq.unit_of_work.base import UnitOfWork
     from cq.unit_of_work.base import MessageBus
+    from cq.unit_of_work.base import UnitOfWork
 
 
 # --------------------------------------

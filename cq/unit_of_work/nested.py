@@ -1,12 +1,13 @@
 import typing as t
 
-from cq.exceptions import CQProgrammingError, UowContextRequired
+from cq.exceptions import CQProgrammingError
+from cq.exceptions import UowContextRequired
 from cq.unit_of_work.base import UnitOfWork
 from cq.unit_of_work.utils.events_collector import DedupeEventsFifo
 
 if t.TYPE_CHECKING:
-    from cq.bus.events import Event
     from cq.bus.bus import MessageBus
+    from cq.bus.events import Event
     from cq.unit_of_work.utils.events_collector import EventsCollector
 
 

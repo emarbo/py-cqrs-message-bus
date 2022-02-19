@@ -1,12 +1,13 @@
 import typing as t
+
 import pytest
-from cq.utils.tracked_handler import tracked_handler
-from cq.utils.tracked_handler import TrackedHandler
-from tests.fixtures.scenarios.create_user import CreateUserCommand
-from tests.fixtures.scenarios.create_user import UserCreatedEvent
+
 from cq.bus.bus import MessageBus
 from cq.contrib.django.unit_of_work import DjangoUnitOfWork
-
+from cq.utils.tracked_handler import TrackedHandler
+from cq.utils.tracked_handler import tracked_handler
+from tests.fixtures.scenarios.create_user import CreateUserCommand
+from tests.fixtures.scenarios.create_user import UserCreatedEvent
 
 CommandHandler = TrackedHandler["CreateUserCommand", t.Any]
 EventHandler = TrackedHandler["UserCreatedEvent", None]

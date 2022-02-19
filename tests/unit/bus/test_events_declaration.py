@@ -4,8 +4,8 @@ import pytest
 
 from cq.bus.events import Event
 from cq.bus.events import EventMeta
-from cq.exceptions import DuplicatedMessageName
 from cq.bus.messages import MessageMeta
+from cq.exceptions import DuplicatedMessageName
 
 
 def test_events_are_registered():

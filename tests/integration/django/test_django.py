@@ -1,6 +1,6 @@
 import contextlib
-from cq.contrib.django.unit_of_work import DjangoUnitOfWork
 
+from cq.contrib.django.unit_of_work import DjangoUnitOfWork
 from tests.unit.unit_of_work.base import _TestTransactionalUnitOfWork
 
 

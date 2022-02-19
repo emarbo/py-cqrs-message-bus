@@ -4,12 +4,11 @@ from collections import defaultdict
 
 from cq.bus.commands import Command
 from cq.bus.events import Event
-from cq.bus.messages import Message
-from cq.unit_of_work import UnitOfWork
 from cq.exceptions import DuplicatedCommandHandler
 from cq.exceptions import InvalidMessage
 from cq.exceptions import InvalidMessageType
 from cq.exceptions import MissingCommandHandler
+from cq.unit_of_work import UnitOfWork
 
 logger = logging.getLogger()
 
