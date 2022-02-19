@@ -46,20 +46,9 @@ MIDDLEWARE: list[str] = []
 # --------------------------------------
 
 DATABASES = {
-    "default": {},
-    "postgres": {
-        "ENGINE": "cq.contrib.django.backends.postgresql",
-        "NAME": "postgres",
-        "USER": "postgres",
-        "PASSWORD": "postgres",
-        "HOST": "localhost",
-        "PORT": 5432,
-        "MESSAGE_BUS": "tests.integration.django.testapp.bus:bus",
-    },
-    "sqlite": {
-        "ENGINE": "cq.contrib.django.backends.sqlite3",
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
         "NAME": "db.sqlite3",
-        "MESSAGE_BUS": "tests.integration.django.testapp.bus:bus",
     },
 }
 

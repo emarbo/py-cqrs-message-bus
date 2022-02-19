@@ -6,10 +6,13 @@ from tests.unit.unit_of_work.base import _TestUnitOfWork
 from tests.unit.unit_of_work.base import _TestTransactionalUnitOfWork
 
 
+@pytest.fixture
+def uow(bus: MessageBus):
+    return NestedUnitOfWork(bus)
+
+
 class TestNestedUnitOfWork(
     _TestUnitOfWork[NestedUnitOfWork],
     _TestTransactionalUnitOfWork[NestedUnitOfWork],
 ):
-    @pytest.fixture
-    def uow(self, bus: MessageBus):
-        return NestedUnitOfWork(bus)
+    pass

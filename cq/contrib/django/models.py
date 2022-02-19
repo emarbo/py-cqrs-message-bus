@@ -7,12 +7,14 @@ from cq.exceptions import UowContextRequired
 
 if t.TYPE_CHECKING:
     from cq.unit_of_work.base import UnitOfWork
-    from cq.bus.bus import MessageBus
 
 
 class BusModel(Model):
+    class Meta:
+        abstract = True
+
     @property
-    def bus(self) -> "MessageBus":
+    def uow(self) -> "UnitOfWork":
         connection = get_connection(using=self._state.db)
 
         uow: t.Optional["UnitOfWork"] = getattr(connection, "uow", None)
@@ -21,4 +23,4 @@ class BusModel(Model):
                 "This instance is not attached ot any UnitOfWork. "
                 "Did you forget opening the bus transaction (with uow:...)? "
             )
-        return uow.bus
+        return uow
