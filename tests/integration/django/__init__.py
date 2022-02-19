@@ -2,20 +2,12 @@ import os
 import django
 from django.db import connections
 
-from cq.contrib.django.databases import patch_django_atomic
-
 
 def setup_django():
     os.environ["DJANGO_SETTINGS_MODULE"] = "tests.integration.django.testapp.settings"
-
-    patch_django_atomic()
     django.setup()
 
-    with connections["postgres"].cursor() as cursor:
-        cursor.execute("drop table if exists testapp_user")
-        cursor.execute("create table testapp_user (id serial, username varchar(200))")
-
-    with connections["sqlite"].cursor() as cursor:
+    with connections["default"].cursor() as cursor:
         cursor.execute("drop table if exists testapp_user")
         cursor.execute(
             "create table testapp_user ("

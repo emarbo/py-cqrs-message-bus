@@ -36,7 +36,7 @@ class MessageMeta(type):
         message_name = dic["NAME"]
         if not isinstance(message_name, str):
             raise InvalidMessageName(
-                f"{name}.NAME must be of 'str' type. Found: '{type(message_name)}'"
+                f"'{name}.NAME' must be of 'str' type. Found: '{type(message_name)}'"
             )
 
     @classmethod

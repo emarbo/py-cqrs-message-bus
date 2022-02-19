@@ -1,6 +1,23 @@
+# --------------------------------------
+# Base exceptions
+# --------------------------------------
+
+
+class CQBaseError(BaseException):
+    """
+    Uncatchable error
+    """
+
+
+class CQProgrammingError(CQBaseError, RuntimeError):
+    """
+    Uncatchable error. Code violates some invariant
+    """
+
+
 class CQError(Exception):
     """
-    Root exception
+    Library root exception
     """
 
 
@@ -69,4 +86,21 @@ class InvalidMessage(CQError, TypeError):
 class InvalidTransactionState(CQError):
     """
     Likely an internal error
+    """
+
+
+# --------------------------------------
+# Unit of Work
+# --------------------------------------
+
+
+class UowContextRequired(CQError):
+    """
+    Code is using the UnitOfWork outside the context or
+    the begin/commit/rollback calls are unpaired.
+
+        >>> uow = UnitOfWork(bus)
+        >>> with uow:
+        ...     uow.emit_event(event)  # Good
+        ... uow.emit_event(event)  # Bad
     """

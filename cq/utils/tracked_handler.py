@@ -1,9 +1,9 @@
 import functools
 import typing as t
 
-from cq.commands import Command
-from cq.events import Event
-from cq.messages import Message
+from cq.bus.commands import Command
+from cq.bus.events import Event
+from cq.bus.messages import Message
 
 M = t.TypeVar("M", bound=Message)
 C = t.TypeVar("C", bound=Command)

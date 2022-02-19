@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 import pytest
 
-from cq.events import Event
-from cq.events import EventMeta
-from cq.exceptions import CQError
-from cq.messages import MessageMeta
+from cq.bus.events import Event
+from cq.bus.events import EventMeta
+from cq.exceptions import DuplicatedMessageName
+from cq.bus.messages import MessageMeta
 
 
 def test_events_are_registered():
@@ -41,7 +41,7 @@ def test_name_collision_raises_exception():
     class MyEvent(Event):
         NAME = "MyEvent"
 
-    with pytest.raises(CQError):
+    with pytest.raises(DuplicatedMessageName):
 
         class OtherEvent(Event):
             NAME = "MyEvent"
