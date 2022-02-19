@@ -144,3 +144,22 @@ class MessageBus:
             for event_handler in handler:
                 bus.subscribe_event(event_cls, event_handler)
         return bus
+
+    def _clear_handlers(self):
+        """
+        Clear handlers. Mainly for testing purposes.
+        """
+        self._clear_command_handlers()
+        self._clear_event_handlers()
+
+    def _clear_command_handlers(self):
+        """
+        Clear handlers. Mainly for testing purposes.
+        """
+        self.command_handlers = {}
+
+    def _clear_event_handlers(self):
+        """
+        Clear handlers. Mainly for testing purposes.
+        """
+        self.event_handlers = defaultdict(list)
