@@ -4,6 +4,7 @@ from collections import defaultdict
 
 from cq.bus.commands import Command
 from cq.bus.events import Event
+from cq.unit_of_work import UnitOfWork
 from cq.exceptions import DuplicatedCommandHandler
 from cq.exceptions import InvalidMessage
 from cq.exceptions import InvalidMessageType
@@ -16,20 +17,21 @@ logger = logging.getLogger()
 # --------------------------------------
 
 
+UOW = t.TypeVar("UOW", bound=UnitOfWork)
 C = t.TypeVar("C", bound=Command)
 E = t.TypeVar("E", bound=Event)
 
 
 class CommandHandlers(t.Protocol):  # pragma: no cover
-    def __setitem__(self, key: type[C], item: t.Callable[[C], t.Any]):
+    def __setitem__(self, key: type[C], item: t.Callable[[C, UOW], t.Any]):
         ...
 
-    def __getitem__(self, item: type[C]) -> t.Callable[[C], t.Any]:
+    def __getitem__(self, item: type[C]) -> t.Callable[[C, UOW], t.Any]:
         ...
 
 
 class EventHandlers(t.Protocol):  # pragma: no cover
-    def __getitem__(self, item: type[E]) -> list[t.Callable[[E], t.Any]]:
+    def __getitem__(self, item: type[E]) -> list[t.Callable[[E, UOW], t.Any]]:
         ...
 
 
@@ -50,7 +52,11 @@ class MessageBus:
         self.event_handlers = defaultdict(list)
         self.command_handlers = {}
 
-    def subscribe_event(self, cls: type[E], handler: t.Callable[[E], t.Any]) -> None:
+    def subscribe_event(
+        self,
+        cls: type[E],
+        handler: t.Callable[[E, UOW], t.Any],
+    ) -> None:
         """
         Subscribe to an event type. An event may have multiple handlers
 
@@ -60,7 +66,11 @@ class MessageBus:
             raise InvalidMessageType(f"This is not an event class: '{cls}'")
         self.event_handlers[cls].append(handler)
 
-    def subscribe_command(self, cls: type[C], handler: t.Callable[[C], t.Any]) -> None:
+    def subscribe_command(
+        self,
+        cls: type[C],
+        handler: t.Callable[[C, UOW], t.Any],
+    ) -> None:
         """
         Set the command handler for this command. Only one handler allowed.
 
@@ -79,7 +89,7 @@ class MessageBus:
                 f"The handler '{handler}' overrides the current '{current_handler}'"
             )
 
-    def handle_command(self, command: C) -> t.Any:
+    def _handle_command(self, command: C, uow: UnitOfWork) -> t.Any:
         """
         Triggers the command handler. Handler exceptions are propagated
 
@@ -95,9 +105,9 @@ class MessageBus:
             raise MissingCommandHandler(f"Missing handler for command: '{command}'")
 
         logger.debug(f"Handling command '{command}': calling '{handler}'")
-        return handler(command)
+        return handler(command, uow)
 
-    def _handle_event(self, event: E) -> None:
+    def _handle_event(self, event: E, uow: UnitOfWork) -> None:
         """
         Triggers the event handlers. Handler exceptions are captured and error-logged.
         """
@@ -107,6 +117,6 @@ class MessageBus:
         for handler in handlers:
             logger.debug(f"Handling event '{event}': calling '{handler}'")
             try:
-                handler(event)
+                handler(event, uow)
             except Exception:
                 logger.exception("Exception handling event '{event}'")

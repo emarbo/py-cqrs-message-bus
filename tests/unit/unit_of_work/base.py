@@ -91,7 +91,7 @@ class _TestUnitOfWork(Base[UOW]):
     ):
         with self.open_context(uow):
             command = CreateUserCommand(self.make_username())
-            uow.bus.handle_command(command)
+            uow.handle_command(command)
         assert create_user_handler.calls == [command]
         assert user_created_handler.calls
         assert user_created_handler.calls[0].username == command.username
@@ -113,7 +113,7 @@ class _TestTransactionalUnitOfWork(_TestUnitOfWork[UOW]):
     ):
         with self.open_context(uow):
             command = CreateUserCommand(self.make_username())
-            uow.bus.handle_command(command)
+            uow.handle_command(command)
             assert not user_created_handler.calls  # != _TestUnitOfWork
 
         assert create_user_handler.calls == [command]
@@ -130,7 +130,7 @@ class _TestTransactionalUnitOfWork(_TestUnitOfWork[UOW]):
         try:
             with self.open_context(uow):
                 command = CreateUserCommand(self.make_username())
-                uow.bus.handle_command(command)
+                uow.handle_command(command)
                 assert not user_created_handler.calls
                 raise FakeException()
         except FakeException:
@@ -149,10 +149,10 @@ class _TestTransactionalUnitOfWork(_TestUnitOfWork[UOW]):
         with self.open_context(uow):
             with self.open_context(uow):
                 command_1 = CreateUserCommand(self.make_username())
-                uow.bus.handle_command(command_1)
+                uow.handle_command(command_1)
             assert not user_created_handler.calls
             command_2 = CreateUserCommand(self.make_username())
-            uow.bus.handle_command(command_2)
+            uow.handle_command(command_2)
             assert not user_created_handler.calls
 
         assert create_user_handler.calls == [command_1, command_2]
@@ -172,13 +172,13 @@ class _TestTransactionalUnitOfWork(_TestUnitOfWork[UOW]):
             try:
                 with self.open_context(uow):
                     command_1 = CreateUserCommand(self.make_username())
-                    uow.bus.handle_command(command_1)
+                    uow.handle_command(command_1)
                     raise FakeException()
             except FakeException:
                 pass
             assert not user_created_handler.calls
             command_2 = CreateUserCommand(self.make_username())
-            uow.bus.handle_command(command_2)
+            uow.handle_command(command_2)
             assert not user_created_handler.calls
 
         assert create_user_handler.calls == [command_1, command_2]

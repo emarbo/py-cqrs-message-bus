@@ -65,19 +65,19 @@ class NestedUnitOfWork(UnitOfWork):
 
     def _emit_event(self, event: "Event"):
         """
-        Implementation of super().emit_event
+        Collect on the current transaction
         """
         self._ensure_context()
         self.stack[-1].collect_event(event)
 
     def _handle_events(self, events: t.Iterable["Event"]):
         """
-        Called by the outermost Transaction on commit
+        Called on commit the outermost transaction
         """
         if self.stack:
             raise CQProgrammingError("This call should happen outside the context")
         for event in events:
-            self.bus._handle_event(event)
+            self._handle_event(event)
 
 
 class Transaction:
