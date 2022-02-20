@@ -1,7 +1,7 @@
 import typing as t
 from contextlib import contextmanager
 
-from django.db.transaction import DEFAULT_DB_ALIAS
+from django.db import DEFAULT_DB_ALIAS
 from django.db.transaction import atomic
 from django.db.transaction import get_connection
 
