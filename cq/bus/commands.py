@@ -27,3 +27,7 @@ class Command(Message, metaclass=CommandMeta):
     """
     The Command base class. To inherit and set the NAME.
     """
+
+    # TODO: Could we define a CommandResult inside a Command?
+    # In this way, we could use typing to define the output of
+    # UnitOfWork.handle_command and preventively detect errors.

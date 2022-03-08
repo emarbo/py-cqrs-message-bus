@@ -24,7 +24,7 @@ class UnitOfWork:
     def __exit__(self, exc_type, exc_value, traceback):
         pass
 
-    def handle_command(self, command: Command):
+    def handle_command(self, command: Command) -> t.Any:
         """
         Triggers the command handler. Handler exceptions are propagated
 
@@ -33,10 +33,10 @@ class UnitOfWork:
         """
         if not isinstance(command, Command):
             raise InvalidMessage(f"This is not a command: '{command}'")
-        self._handle_command(command)
+        return self._handle_command(command)
 
-    def _handle_command(self, command: Command):
-        self.bus._handle_command(command, self)
+    def _handle_command(self, command: Command) -> t.Any:
+        return self.bus._handle_command(command, self)
 
     def emit_event(self, event: Event):
         """
