@@ -1,5 +1,6 @@
 import logging
 import typing as t
+import inspect
 from collections import defaultdict
 
 from cq.bus.commands import Command
@@ -48,6 +49,15 @@ class EventHandlers(t.Protocol):  # pragma: no cover
 # --------------------------------------
 # Bus
 # --------------------------------------
+
+#
+# NOTE: subscrbing to Event means subscrbing to all events. In the same way,
+# subscribing to ParentEvent means subscribing to any ChildEvent(ParentEvent).
+# I dunno if this makes sense for everyone, I'm just exploring options and
+# trying in a real project to get a real experience.
+# Btw, I'll better check/revise how this works in Kafka or Rabbit and get some
+# clever ideas from the real pros.
+#
 
 
 class MessageBus:
@@ -121,7 +131,9 @@ class MessageBus:
         """
         Triggers the event handlers. Handler exceptions are captured and error-logged.
         """
-        handlers = self.event_handlers[type(event)][:]
+        handlers: list[t.Callable[[Event, UnitOfWork], None]] = []
+        for event_cls in inspect.getmro(type(event)):
+            handlers.extend(self.event_handlers[event_cls])
         logger.debug(f"Handling event '{event}': {len(handlers)} handlers")
 
         for handler in handlers:

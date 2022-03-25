@@ -1,8 +1,11 @@
 import pytest
-
 from cq.bus.bus import MessageBus
+from cq.bus.events import Event
+from cq.bus.messages import Message
+
 from cq.exceptions import MissingCommandHandler
 from cq.unit_of_work.base import UnitOfWork
+from cq.utils.tracked_handler import TrackedHandler
 from tests.fixtures.scenarios.create_user import CommandHandler
 from tests.fixtures.scenarios.create_user import CreateUserCommand
 from tests.fixtures.scenarios.create_user import EventHandler
@@ -70,3 +73,25 @@ def test_bus_handles_commands_emitting_events(
     assert create_user_handler.calls[0] == command
     assert user_created_handler.calls
     assert user_created_handler.calls[0].username == "pepe"
+
+
+def test_bus_calls_handlers_in_the_event_hierarchy(
+    bus: MessageBus,
+    uow: UnitOfWork,
+    user_created_handler: EventHandler,
+    handler: TrackedHandler[Message, None],
+):
+    """
+    Test subscribing to an event means subscribing to all the children
+    """
+    # Subscribe to ALL events
+    bus.subscribe_event(Event, handler)
+
+    event = UserCreatedEvent("pepe")
+    with uow:
+        uow.emit_event(event)
+
+    assert user_created_handler.calls
+    assert user_created_handler.calls[0] == event
+    assert handler.calls
+    assert handler.calls[0] == event
