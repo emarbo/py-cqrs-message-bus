@@ -1,15 +1,15 @@
+import inspect
 import logging
 import typing as t
-import inspect
 from collections import defaultdict
 
-from cq.bus.commands import Command
-from cq.bus.events import Event
-from cq.exceptions import DuplicatedCommandHandler
-from cq.exceptions import InvalidMessage
-from cq.exceptions import InvalidMessageType
-from cq.exceptions import MissingCommandHandler
-from cq.unit_of_work import UnitOfWork
+from mb.commands import Command
+from mb.events import Event
+from mb.exceptions import DuplicatedCommandHandler
+from mb.exceptions import InvalidMessage
+from mb.exceptions import InvalidMessageType
+from mb.exceptions import MissingCommandHandler
+from mb.unit_of_work import UnitOfWork
 
 logger = logging.getLogger()
 

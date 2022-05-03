@@ -5,12 +5,12 @@ from django.db import DEFAULT_DB_ALIAS
 from django.db.transaction import atomic
 from django.db.transaction import get_connection
 
-from cq.unit_of_work.nested import NestedUnitOfWork
-from cq.unit_of_work.utils.events_collector import DedupeEventsFifo
+from mb.unit_of_work.nested import NestedUnitOfWork
+from mb.unit_of_work.utils.events_collector import DedupeEventsFifo
 
 if t.TYPE_CHECKING:
-    from cq.bus.bus import MessageBus
-    from cq.unit_of_work.utils.events_collector import EventsCollector
+    from mb.bus import MessageBus
+    from mb.unit_of_work.utils.events_collector import EventsCollector
 
 Using = t.Union[list[str], str, None]
 
@@ -27,7 +27,7 @@ class DjangoUnitOfWork(NestedUnitOfWork):
     providing a way for Model instances to access the bus by themselves when running
     within an UoW transaction.
 
-        >>> from cq.contrib.django.models import BusModel
+        >>> from mb.contrib.django.models import BusModel
         >>> class User(BusModel):
         ...    def save(self, *a, **kw):
         ...        super().save(*a, **kw)

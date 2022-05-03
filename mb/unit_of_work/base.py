@@ -1,11 +1,11 @@
 import typing as t
 
-from cq.bus.commands import Command
-from cq.bus.events import Event
-from cq.exceptions import InvalidMessage
+from mb.commands import Command
+from mb.events import Event
+from mb.exceptions import InvalidMessage
 
 if t.TYPE_CHECKING:
-    from cq.bus.bus import MessageBus
+    from mb.bus import MessageBus
 
 
 class UnitOfWork:

@@ -2,10 +2,10 @@ import typing as t
 
 import pytest
 
-from cq.bus.bus import MessageBus
-from cq.contrib.django.unit_of_work import DjangoUnitOfWork
-from cq.utils.tracked_handler import TrackedHandler
-from cq.utils.tracked_handler import tracked_handler
+from mb.bus import MessageBus
+from mb.contrib.django.unit_of_work import DjangoUnitOfWork
+from mb.utils.tracked_handler import TrackedHandler
+from mb.utils.tracked_handler import tracked_handler
 from tests.fixtures.scenarios.create_user import CreateUserCommand
 from tests.fixtures.scenarios.create_user import UserCreatedEvent
 

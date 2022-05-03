@@ -1,10 +1,10 @@
 import pytest
 
-from cq.bus.bus import MessageBus
-from cq.bus.messages import Message
-from cq.unit_of_work.nested import NestedUnitOfWork
-from cq.utils.tracked_handler import TrackedHandler
-from cq.utils.tracked_handler import tracked_handler
+from mb.bus import MessageBus
+from mb.messages import Message
+from mb.unit_of_work.nested import NestedUnitOfWork
+from mb.utils.tracked_handler import TrackedHandler
+from mb.utils.tracked_handler import tracked_handler
 
 
 @pytest.fixture()

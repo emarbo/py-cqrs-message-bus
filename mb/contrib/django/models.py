@@ -3,10 +3,10 @@ import typing as t
 from django.db.models import Model
 from django.db.transaction import get_connection
 
-from cq.exceptions import UowContextRequired
+from mb.exceptions import UowContextRequired
 
 if t.TYPE_CHECKING:
-    from cq.unit_of_work.base import UnitOfWork
+    from mb.unit_of_work.base import UnitOfWork
 
 
 class BusModel(Model):

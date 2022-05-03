@@ -2,7 +2,7 @@ import abc
 import typing as t
 
 if t.TYPE_CHECKING:
-    from cq.bus.events import Event
+    from mb.events import Event
 
 
 class EventsCollector(t.Collection["Event"], abc.ABC):

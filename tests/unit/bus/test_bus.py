@@ -1,11 +1,11 @@
 import pytest
-from cq.bus.bus import MessageBus
-from cq.bus.events import Event
-from cq.bus.messages import Message
 
-from cq.exceptions import MissingCommandHandler
-from cq.unit_of_work.base import UnitOfWork
-from cq.utils.tracked_handler import TrackedHandler
+from mb.bus import MessageBus
+from mb.events import Event
+from mb.exceptions import MissingCommandHandler
+from mb.messages import Message
+from mb.unit_of_work.base import UnitOfWork
+from mb.utils.tracked_handler import TrackedHandler
 from tests.fixtures.scenarios.create_user import CommandHandler
 from tests.fixtures.scenarios.create_user import CreateUserCommand
 from tests.fixtures.scenarios.create_user import EventHandler

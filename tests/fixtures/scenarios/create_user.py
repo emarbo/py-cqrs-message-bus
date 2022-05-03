@@ -3,14 +3,14 @@ from dataclasses import dataclass
 
 import pytest
 
-from cq.bus.commands import Command
-from cq.bus.events import Event
-from cq.utils.tracked_handler import TrackedHandler
-from cq.utils.tracked_handler import tracked_handler
+from mb.commands import Command
+from mb.events import Event
+from mb.utils.tracked_handler import TrackedHandler
+from mb.utils.tracked_handler import tracked_handler
 
 if t.TYPE_CHECKING:
-    from cq.unit_of_work.base import MessageBus
-    from cq.unit_of_work.base import UnitOfWork
+    from mb.unit_of_work.base import MessageBus
+    from mb.unit_of_work.base import UnitOfWork
 
 
 # --------------------------------------

@@ -1,10 +1,10 @@
 import functools
 import typing as t
 
-from cq.bus.commands import Command
-from cq.bus.events import Event
-from cq.bus.messages import Message
-from cq.unit_of_work.base import UnitOfWork
+from mb.commands import Command
+from mb.events import Event
+from mb.messages import Message
+from mb.unit_of_work.base import UnitOfWork
 
 UOW = t.TypeVar("UOW", bound=UnitOfWork)
 M = t.TypeVar("M", bound=Message)

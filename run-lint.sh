@@ -2,6 +2,6 @@
 
 set -x
 
-isort --recursive cq tests
-black cq tests
-python -m flake8 --statistics --count cq
+isort --recursive mb tests
+black mb tests
+python -m flake8 --statistics --count mb

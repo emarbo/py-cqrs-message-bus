@@ -8,7 +8,7 @@ max-line-length = 88
 [tool.isort]
 line_length = 88
 force_single_line = "1"
-known_first_party = ["cq", "tests"]
+known_first_party = ["mb", "tests"]
 default_section = "THIRDPARTY"
 
 [tool.coverage.run]

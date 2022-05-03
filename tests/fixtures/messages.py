@@ -1,8 +1,8 @@
 import pytest
 
-from cq.bus.commands import CommandMeta
-from cq.bus.events import EventMeta
-from cq.bus.messages import MessageMeta
+from mb.commands import CommandMeta
+from mb.events import EventMeta
+from mb.messages import MessageMeta
 
 
 @pytest.fixture(autouse=True)

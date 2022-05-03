@@ -1,14 +1,14 @@
 import typing as t
 
-from cq.exceptions import CQProgrammingError
-from cq.exceptions import UowContextRequired
-from cq.unit_of_work.base import UnitOfWork
-from cq.unit_of_work.utils.events_collector import DedupeEventsFifo
+from mb.exceptions import CQProgrammingError
+from mb.exceptions import UowContextRequired
+from mb.unit_of_work.base import UnitOfWork
+from mb.unit_of_work.utils.events_collector import DedupeEventsFifo
 
 if t.TYPE_CHECKING:
-    from cq.bus.bus import MessageBus
-    from cq.bus.events import Event
-    from cq.unit_of_work.utils.events_collector import EventsCollector
+    from mb.bus import MessageBus
+    from mb.events import Event
+    from mb.unit_of_work.utils.events_collector import EventsCollector
 
 
 class NestedUnitOfWork(UnitOfWork):

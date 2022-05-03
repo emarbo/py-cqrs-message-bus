@@ -1,6 +1,6 @@
 from django.db import models
 
-from cq.contrib.django.models import BusModel
+from mb.contrib.django.models import BusModel
 from tests.fixtures.scenarios.create_user import UserCreatedEvent
 
 
