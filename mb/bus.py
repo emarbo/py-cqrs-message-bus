@@ -141,7 +141,7 @@ class MessageBus:
             try:
                 handler(event, uow)
             except Exception:
-                logger.exception("Exception handling event '{event}'")
+                logger.exception(f"Exception handling event '{event}'")
 
     def clone(self) -> "MessageBus":
         """

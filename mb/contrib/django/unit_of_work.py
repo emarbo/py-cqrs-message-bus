@@ -79,7 +79,7 @@ class DjangoUnitOfWork(NestedUnitOfWork):
     GOOD (shorter):
 
         >>> uow = DjangoUnitOfWork(bus)
-        >>> with uow.atomic:
+        >>> with uow.atomic():
         ...     user.save()
         ...     uow.emit_event(UserCreated(user.id))  # queued
 
