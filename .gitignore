@@ -4,3 +4,5 @@ htmlcov
 __pycache__
 tags
 db.sqlite3
+dist
+*.egg-info
