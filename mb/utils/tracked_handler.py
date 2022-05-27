@@ -1,32 +1,33 @@
 import functools
+from itertools import chain
 import typing as t
 
-from mb.commands import Command
-from mb.events import Event
 from mb.messages import Message
-from mb.unit_of_work.base import UnitOfWork
 
-UOW = t.TypeVar("UOW", bound=UnitOfWork)
-M = t.TypeVar("M", bound=Message)
-C = t.TypeVar("C", bound=Command)
-E = t.TypeVar("E", bound=Event)
+P = t.ParamSpec("P")
 R = t.TypeVar("R")
+M = t.TypeVar("M", bound=Message | None)
 
 
-class TrackedHandler(t.Protocol[M, R]):
+class TrackedHandler(t.Protocol[P, R, M]):
     calls: list[M]
-    __call__: t.Callable[["TrackedHandler", M, UOW], R]
+    __call__: t.Callable[P, R]
 
 
-def tracked_handler(func: t.Callable[[M, UOW], R]) -> TrackedHandler[M, R]:
+def tracked_handler(func: t.Callable[P, R]) -> TrackedHandler[P, R, M]:
     """
     Tracks the calls to a handler in the :attr:`calls`.
     """
 
     @functools.wraps(func)
-    def wrapper(m: M, uow: UOW) -> R:
-        wrapper.calls.append(m)  # type:ignore
-        return func(m, uow)
+    def wrapper(*args, **kwargs) -> R:
+        for argument in chain(args, kwargs.values()):
+            if isinstance(argument, Message):
+                wrapper.calls.append(argument)  # type:ignore
+                break
+        else:
+            wrapper.calls.append(None)  # type:ignore
+        return func(*args, **kwargs)
 
     wrapper.calls = []  # type:ignore
     return wrapper  # type:ignore

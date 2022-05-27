@@ -3,12 +3,13 @@ import typing as t
 from uuid import uuid4
 
 from mb.unit_of_work import UnitOfWork
-from tests.fixtures.scenarios.create_user import CommandHandler
+from mb.utils.tracked_handler import TrackedHandler
 from tests.fixtures.scenarios.create_user import CreateUserCommand
-from tests.fixtures.scenarios.create_user import EventHandler
 from tests.fixtures.scenarios.create_user import UserCreatedEvent
 
 UOW = t.TypeVar("UOW", bound=UnitOfWork)
+
+UCH: t.TypeAlias = TrackedHandler[t.Any, t.Any, UserCreatedEvent]
 
 
 class FakeException(Exception):
@@ -73,7 +74,7 @@ class _TestUnitOfWork(Base[UOW]):
     def test_events_are_handled(
         self,
         uow: UOW,
-        user_created_handler: EventHandler,
+        user_created_handler: UCH,
     ):
         with self.open_context(uow):
             event = UserCreatedEvent("mike")
@@ -84,8 +85,8 @@ class _TestUnitOfWork(Base[UOW]):
     def test_commit_transaction(
         self,
         uow: UOW,
-        create_user_handler: CommandHandler,
-        user_created_handler: EventHandler,
+        create_user_handler: TrackedHandler,
+        user_created_handler: UCH,
     ):
         with self.open_context(uow):
             command = CreateUserCommand(self.make_username())
@@ -106,8 +107,8 @@ class _TestTransactionalUnitOfWork(_TestUnitOfWork[UOW]):
     def test_commit_transaction(
         self,
         uow: UOW,
-        create_user_handler: CommandHandler,
-        user_created_handler: EventHandler,
+        create_user_handler: TrackedHandler,
+        user_created_handler: UCH,
     ):
         with self.open_context(uow):
             command = CreateUserCommand(self.make_username())
@@ -122,8 +123,8 @@ class _TestTransactionalUnitOfWork(_TestUnitOfWork[UOW]):
     def test_rollback_transaction(
         self,
         uow: UOW,
-        create_user_handler: CommandHandler,
-        user_created_handler: EventHandler,
+        create_user_handler: TrackedHandler,
+        user_created_handler: TrackedHandler,
     ):
         try:
             with self.open_context(uow):
@@ -141,8 +142,8 @@ class _TestTransactionalUnitOfWork(_TestUnitOfWork[UOW]):
     def test_commiting_nested_transaction(
         self,
         uow: UOW,
-        create_user_handler: CommandHandler,
-        user_created_handler: EventHandler,
+        create_user_handler: TrackedHandler,
+        user_created_handler: TrackedHandler,
     ):
         with self.open_context(uow):
             with self.open_context(uow):
@@ -163,8 +164,8 @@ class _TestTransactionalUnitOfWork(_TestUnitOfWork[UOW]):
     def test_rolling_back_nested_transaction(
         self,
         uow: UOW,
-        create_user_handler: CommandHandler,
-        user_created_handler: EventHandler,
+        create_user_handler: TrackedHandler,
+        user_created_handler: TrackedHandler,
     ):
         with self.open_context(uow):
             try:

@@ -1,5 +1,3 @@
-import typing as t
-
 import pytest
 
 from mb.bus import MessageBus
@@ -9,9 +7,6 @@ from mb.utils.tracked_handler import tracked_handler
 from tests.fixtures.scenarios.create_user import CreateUserCommand
 from tests.fixtures.scenarios.create_user import UserCreatedEvent
 
-CommandHandler = TrackedHandler["CreateUserCommand", t.Any]
-EventHandler = TrackedHandler["UserCreatedEvent", None]
-
 
 @pytest.fixture()
 def uow(bus: MessageBus):
@@ -19,7 +14,7 @@ def uow(bus: MessageBus):
 
 
 @pytest.fixture(autouse=True, scope="function")
-def create_user_handler(bus: MessageBus) -> CommandHandler:
+def create_user_handler(bus: MessageBus) -> TrackedHandler:
     from tests.integration.django.testapp.models import User
 
     @tracked_handler
@@ -33,9 +28,9 @@ def create_user_handler(bus: MessageBus) -> CommandHandler:
 
 
 @pytest.fixture(autouse=True, scope="function")
-def user_created_handler(bus: MessageBus) -> EventHandler:
+def user_created_handler(bus: MessageBus) -> TrackedHandler:
     @tracked_handler
-    def handler(event: UserCreatedEvent, uow: DjangoUnitOfWork):
+    def handler(event: UserCreatedEvent):
         pass
 
     bus.subscribe_event(UserCreatedEvent, handler)

@@ -10,45 +10,10 @@ from mb.exceptions import InvalidMessage
 from mb.exceptions import InvalidMessageType
 from mb.exceptions import MissingCommandHandler
 from mb.unit_of_work import UnitOfWork
+from mb.injection import PreparedHandler
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
-# --------------------------------------
-# Typings
-# --------------------------------------
-
-#
-# TODO: Force callbacks' first argument type (command or event) but allow
-# arbitrary keyword arguments to implement Dependency Injection features.
-# Not all handlers need the current UnitOfWork and others might need
-# other global services to work (e.g. EmailsService) that could be
-# injected.
-#
-# Currently, Python 3.9 does not offer the abilities do to so. Will be
-# the new Python 3.10 features enough? Concatenate, Param, ...
-#
-
-UOW = t.TypeVar("UOW", bound=UnitOfWork)
-C = t.TypeVar("C", bound=Command)
-E = t.TypeVar("E", bound=Event)
-
-
-class CommandHandlers(t.Protocol):  # pragma: no cover
-    def __setitem__(self, key: type[C], item: t.Callable[[C, UOW], t.Any]):
-        ...
-
-    def __getitem__(self, item: type[C]) -> t.Callable[[C, UOW], t.Any]:
-        ...
-
-
-class EventHandlers(t.Protocol):  # pragma: no cover
-    def __getitem__(self, item: type[E]) -> list[t.Callable[[E, UOW], t.Any]]:
-        ...
-
-
-# --------------------------------------
-# Bus
-# --------------------------------------
 
 #
 # NOTE: subscrbing to Event means subscrbing to all events. In the same way,
@@ -65,51 +30,59 @@ class MessageBus:
     An in-memory message bus.
     """
 
-    event_handlers: EventHandlers
-    command_handlers: CommandHandlers
+    event_handlers: dict[type[Event], list[t.Callable]]
+    command_handlers: dict[type[Command], t.Callable]
 
     def __init__(self):
         self.event_handlers = defaultdict(list)
         self.command_handlers = {}
 
-    def subscribe_event(
-        self,
-        cls: type[E],
-        handler: t.Callable[[E, UOW], t.Any],
-    ) -> None:
+    def subscribe_event(self, cls: type[Event], handler: t.Callable) -> None:
         """
         Subscribe to an event type. An event may have multiple handlers
 
         :raises InvalidMessageType:
         """
-        if not issubclass(cls, Event):
+        if not self.__is_event_type(cls):
             raise InvalidMessageType(f"This is not an event class: '{cls}'")
-        self.event_handlers[cls].append(handler)
 
-    def subscribe_command(
-        self,
-        cls: type[C],
-        handler: t.Callable[[C, UOW], t.Any],
-    ) -> None:
+        if handler in self.event_handlers:
+            logger.info(
+                "Ignoring duplicated subscribe of handler '{handler}' to '{cls}'"
+            )
+        else:
+            self.event_handlers[cls].append(handler)
+
+    def subscribe_command(self, cls: type[Command], handler: t.Callable) -> None:
         """
         Set the command handler for this command. Only one handler allowed.
 
         :raises InvalidMessageType:
         :raises ConfigError: if there is already a handler
         """
-        if not issubclass(cls, Command):
+        if not self.__is_command_type(cls):
             raise InvalidMessageType(f"This is not a command class: '{cls}'")
-        try:
-            current_handler = self.command_handlers[cls]
-        except KeyError:
+
+        current = self.command_handlers.get(cls, None)
+        if current is None:
             self.command_handlers[cls] = handler
+        elif current == handler:
+            logger.info(
+                "Ignoring duplicated subscribe of handler '{handler}' to '{cls}'"
+            )
         else:
             raise DuplicatedCommandHandler(
                 f"Duplicated handler for command '{cls}'. "
-                f"The handler '{handler}' overrides the current '{current_handler}'"
+                f"The handler '{handler}' overrides the current '{current}'"
             )
 
-    def _handle_command(self, command: C, uow: UnitOfWork) -> t.Any:
+    def __is_command_type(self, thing):
+        return isinstance(thing, type) and issubclass(thing, Command)
+
+    def __is_event_type(self, thing):
+        return isinstance(thing, type) and issubclass(thing, Event)
+
+    def _handle_command(self, command: Command, uow: UnitOfWork) -> t.Any:
         """
         Triggers the command handler. Handler exceptions are propagated
 
@@ -122,24 +95,32 @@ class MessageBus:
         try:
             handler = self.command_handlers[type(command)]
         except KeyError:
-            raise MissingCommandHandler(f"Missing handler for command: '{command}'")
+            raise MissingCommandHandler(command)
 
         logger.debug(f"Handling command '{command}': calling '{handler}'")
-        return handler(command, uow)
+        prepared = PreparedHandler(handler, command, uow)
+        return prepared()
 
-    def _handle_event(self, event: E, uow: UnitOfWork) -> None:
+    def _handle_event(self, event: Event, uow: UnitOfWork) -> None:
         """
         Triggers the event handlers. Handler exceptions are captured and error-logged.
         """
-        handlers: list[t.Callable[[Event, UnitOfWork], None]] = []
+        # Collect handlers
+        seen: set[t.Callable] = set()
+        handlers: list[t.Callable] = []
         for event_cls in inspect.getmro(type(event)):
-            handlers.extend(self.event_handlers[event_cls])
-        logger.debug(f"Handling event '{event}': {len(handlers)} handlers")
+            for handler in self.event_handlers[event_cls]:
+                if handler not in seen:
+                    handlers.append(handler)
+                    seen.add(handler)
 
+        # Call handlers
+        logger.debug(f"Handling event '{event}': {len(handlers)} handlers")
         for handler in handlers:
             logger.debug(f"Handling event '{event}': calling '{handler}'")
+            prepared = PreparedHandler(handler, event, uow)
             try:
-                handler(event, uow)
+                prepared()
             except Exception:
                 logger.exception(f"Exception handling event '{event}'")
 
@@ -149,11 +130,11 @@ class MessageBus:
         """
         bus = type(self)()
 
-        for command_cls, handler in self.command_handlers.items():  # type:ignore
+        for command_cls, handler in self.command_handlers.items():
             bus.subscribe_command(command_cls, handler)
 
-        for event_cls, handler in self.event_handlers.items():  # type:ignore
-            for event_handler in handler:
+        for event_cls, handlers in self.event_handlers.items():
+            for event_handler in handlers:
                 bus.subscribe_event(event_cls, event_handler)
         return bus
 

@@ -7,10 +7,8 @@ from mb.commands import Command
 from mb.events import Event
 from mb.utils.tracked_handler import TrackedHandler
 from mb.utils.tracked_handler import tracked_handler
-
-if t.TYPE_CHECKING:
-    from mb.unit_of_work.base import MessageBus
-    from mb.unit_of_work.base import UnitOfWork
+from mb import MessageBus
+from mb.unit_of_work.base import UnitOfWork
 
 
 # --------------------------------------
@@ -40,18 +38,15 @@ class UserCreatedEvent(Event):
 # Fixtures
 # --------------------------------------
 
-CommandHandler = TrackedHandler["CreateUserCommand", None]
-EventHandler = TrackedHandler["UserCreatedEvent", None]
-
 
 @pytest.fixture()
-def create_user_handler(bus: "MessageBus") -> CommandHandler:
+def create_user_handler(bus: MessageBus) -> TrackedHandler:
     """
     A handler that emits UserCreatedEvent()
     """
 
     @tracked_handler
-    def create_user_handler(command: "CreateUserCommand", uow: "UnitOfWork"):
+    def create_user_handler(command: CreateUserCommand, uow: UnitOfWork):
         with uow:
             event = UserCreatedEvent(username=command.username)
             uow.emit_event(event)
@@ -61,13 +56,13 @@ def create_user_handler(bus: "MessageBus") -> CommandHandler:
 
 
 @pytest.fixture()
-def user_created_handler(bus: "MessageBus") -> EventHandler:
+def user_created_handler(bus: MessageBus) -> TrackedHandler:
     """
     Dumb handler
     """
 
     @tracked_handler
-    def user_created_handler(event: "UserCreatedEvent", uow: "UnitOfWork"):
+    def user_created_handler(event: UserCreatedEvent):
         return
 
     bus.subscribe_event(UserCreatedEvent, user_created_handler)

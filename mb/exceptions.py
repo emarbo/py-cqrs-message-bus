@@ -1,3 +1,11 @@
+import typing as t
+
+if t.TYPE_CHECKING:
+    from mb.commands import Command
+
+# TODO: Sufix all errors with Error (and remove some prefixes?)
+# TODO: Move some message str to the __init__ of these exceptions
+
 # --------------------------------------
 # Base exceptions
 # --------------------------------------
@@ -60,6 +68,11 @@ class MissingCommandHandler(ConfigError, RuntimeError):
     No handler found for a Command
     """
 
+    def __init__(self, command: "Command"):
+        self.message = f"Missing handler for command: '{command}'"
+        self.command = command
+        super().__init__(self.message, self.command)
+
 
 class InvalidMessageType(ConfigError, TypeError):
     """
@@ -76,6 +89,22 @@ class InvalidMessage(CQError, TypeError):
     """
     The Bus only handles Messages
     """
+
+
+class InjectError(CQError, RuntimeError):
+    """
+    The argument couldn't be injected
+    """
+
+    def __init__(self, argument: str, handler: t.Callable):
+        message = (
+            "Cannot inject the {argument} argument in handler '{handler}'. "
+            "No candidates found by name or annotation."
+        )
+        super().__init__(message, argument, handler)
+        self.message = message
+        self.argument = argument
+        self.handler = handler
 
 
 # --------------------------------------

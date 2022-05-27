@@ -18,7 +18,7 @@ def uow(bus):
 
 
 @pytest.fixture()
-def handler() -> TrackedHandler[Message, None]:
+def handler() -> TrackedHandler:
     """
     A generic handler for Commands and Events
     """

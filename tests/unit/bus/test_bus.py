@@ -1,4 +1,5 @@
 import pytest
+import typing as t
 
 from mb.bus import MessageBus
 from mb.events import Event
@@ -6,15 +7,13 @@ from mb.exceptions import MissingCommandHandler
 from mb.messages import Message
 from mb.unit_of_work.base import UnitOfWork
 from mb.utils.tracked_handler import TrackedHandler
-from tests.fixtures.scenarios.create_user import CommandHandler
 from tests.fixtures.scenarios.create_user import CreateUserCommand
-from tests.fixtures.scenarios.create_user import EventHandler
 from tests.fixtures.scenarios.create_user import UserCreatedEvent
 
 
 def test_bus_handles_commands(
     uow: UnitOfWork,
-    create_user_handler: CommandHandler,
+    create_user_handler: TrackedHandler,
 ):
     """
     Test simple command configuration
@@ -27,7 +26,7 @@ def test_bus_handles_commands(
 
 def test_bus_handles_events(
     uow: UnitOfWork,
-    user_created_handler: EventHandler,
+    user_created_handler: TrackedHandler,
 ):
     """
     Test simple event configuration
@@ -60,8 +59,8 @@ def test_missing_event_handler_is_fine(uow: UnitOfWork):
 
 def test_bus_handles_commands_emitting_events(
     uow: UnitOfWork,
-    create_user_handler: CommandHandler,
-    user_created_handler: EventHandler,
+    create_user_handler: TrackedHandler,
+    user_created_handler: TrackedHandler,
 ):
     """
     Test simple commands and events scenario
@@ -78,8 +77,8 @@ def test_bus_handles_commands_emitting_events(
 def test_bus_calls_handlers_in_the_event_hierarchy(
     bus: MessageBus,
     uow: UnitOfWork,
-    user_created_handler: EventHandler,
-    handler: TrackedHandler[Message, None],
+    user_created_handler: TrackedHandler,
+    handler: TrackedHandler[t.Any, t.Any, None],
 ):
     """
     Test subscribing to an event means subscribing to all the children
