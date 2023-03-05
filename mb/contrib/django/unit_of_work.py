@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from django.db import DEFAULT_DB_ALIAS
 from django.db.transaction import atomic
 from django.db.transaction import get_connection
+from mb.contrib.django.exceptions import DjangoUnitOfWorkBindError
 
 from mb.unit_of_work.nested import NestedUnitOfWork
 from mb.unit_of_work.utils.events_collector import DedupeEventsFifo
@@ -167,8 +168,19 @@ class DjangoUnitOfWork(NestedUnitOfWork):
 
     def _bind_connections(self):
         for using in self.using:
-            connection = get_connection(using)
-            connection.uow = self
+            self._bind_connection(using)
+
+    def _bind_connection(self, using: str):
+        connection = get_connection(using)
+        current_uow = getattr(connection, "uow", None)
+        if current_uow and current_uow != self:
+            message = (
+                f"Cannot bind the UoW {self} to the current database transaction "
+                f"because the UoW {current_uow} was already bound to it. "
+                "Only one UoW can be bound to a database transaction."
+            )
+            raise DjangoUnitOfWorkBindError(message)
+        connection.uow = self
 
     def _unbind_connections(self):
         for using in self.using:

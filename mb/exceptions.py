@@ -108,17 +108,6 @@ class InjectError(CQError, RuntimeError):
 
 
 # --------------------------------------
-# Databases
-# --------------------------------------
-
-
-class InvalidTransactionState(CQError):
-    """
-    Likely an internal error
-    """
-
-
-# --------------------------------------
 # Unit of Work
 # --------------------------------------
 
