@@ -11,6 +11,12 @@ if t.TYPE_CHECKING:
     from mb.unit_of_work.utils.events_collector import EventsCollector
 
 
+# TODO: Provide an autocommit mode to be paired with most of the
+# database transaction managements. This is specially helpful when playing
+# on a python terminal. Besides of that, the autocommit mode is the default
+# mode for most of the database connections.
+
+
 class NestedUnitOfWork(UnitOfWork):
     """
     Handles events on outermost UOW commit.

@@ -24,6 +24,18 @@ logger = logging.getLogger(__name__)
 # clever ideas from the real pros.
 #
 
+#
+# TODO: Provide priority when subscribing.
+# By default, handlers are ordered by
+#
+#  1. Preciseness: when emitting MyEvent, handlers subscribed to MyEvent go before
+#     events subscribed to Event
+#
+#  2. Subscription order: subscribers of MyEvent are called by subscription order
+#
+# The approach is ordering by priority, then Preciseness, then Subscription order.
+#
+
 
 class MessageBus:
     """
