@@ -2,7 +2,7 @@ import typing as t
 
 from mb.commands import Command
 from mb.events import Event
-from mb.exceptions import InvalidMessage
+from mb.exceptions import InvalidMessageError
 
 if t.TYPE_CHECKING:
     from mb.bus import MessageBus
@@ -32,7 +32,7 @@ class UnitOfWork:
         :raises MissingCommandHandler: if there's no handler configured for the command
         """
         if not isinstance(command, Command):
-            raise InvalidMessage(f"This is not a command: '{command}'")
+            raise InvalidMessageError(f"This is not a command: '{command}'")
         return self._handle_command(command)
 
     def _handle_command(self, command: Command) -> t.Any:
@@ -45,7 +45,7 @@ class UnitOfWork:
         :raises InvalidMessage: if this isn't an Event
         """
         if not isinstance(event, Event):
-            raise InvalidMessage(f"This is not an event: '{event}'")
+            raise InvalidMessageError(f"This is not an event: '{event}'")
         self._emit_event(event)
 
     def _emit_event(self, event: Event):

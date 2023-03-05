@@ -4,7 +4,7 @@ import pytest
 
 from mb.events import Event
 from mb.events import EventMeta
-from mb.exceptions import DuplicatedMessageName
+from mb.exceptions import DuplicatedNameError
 from mb.messages import MessageMeta
 
 
@@ -41,7 +41,7 @@ def test_name_collision_raises_exception():
     class MyEvent(Event):
         NAME = "MyEvent"
 
-    with pytest.raises(DuplicatedMessageName):
+    with pytest.raises(DuplicatedNameError):
 
         class OtherEvent(Event):
             NAME = "MyEvent"

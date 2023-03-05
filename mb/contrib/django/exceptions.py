@@ -1,5 +1,5 @@
-from mb.exceptions import CQError
+from mb.exceptions import MbError
 
 
-class DjangoUnitOfWorkBindError(CQError, RuntimeError):
+class DjangoUnitOfWorkBindError(MbError, RuntimeError):
     pass

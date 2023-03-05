@@ -3,7 +3,7 @@ import pytest
 from mb.bus import MessageBus
 from mb.commands import Command
 from mb.events import Event
-from mb.exceptions import MissingCommandHandler
+from mb.exceptions import MissingHandlerError
 from mb.messages import Message
 from mb.unit_of_work.base import UnitOfWork
 from mb.utils.tracked_handler import TrackedHandler, tracked_handler

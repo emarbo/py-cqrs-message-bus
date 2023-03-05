@@ -1,7 +1,7 @@
 import typing as t
 
-from mb.exceptions import DuplicatedMessageName
-from mb.exceptions import InvalidMessageName
+from mb.exceptions import DuplicatedNameError
+from mb.exceptions import InvalidNameError
 
 
 class MessageMeta(type):
@@ -35,7 +35,7 @@ class MessageMeta(type):
     def _check_name_type(cls, name, dic):
         message_name = dic["NAME"]
         if not isinstance(message_name, str):
-            raise InvalidMessageName(
+            raise InvalidNameError(
                 f"'{name}.NAME' must be of 'str' type. Found: '{type(message_name)}'"
             )
 
@@ -46,7 +46,7 @@ class MessageMeta(type):
             message_cls = cls._messages[message_name]
         except KeyError:
             return
-        raise DuplicatedMessageName(
+        raise DuplicatedNameError(
             "These messages have the same NAME: "
             f"'{name}' and '{message_cls.__name__}'"
         )

@@ -3,7 +3,7 @@ import typing as t
 
 from mb.bus import MessageBus
 from mb.events import Event
-from mb.exceptions import MissingCommandHandler
+from mb.exceptions import MissingHandlerError
 from mb.messages import Message
 from mb.unit_of_work.base import UnitOfWork
 from mb.utils.tracked_handler import TrackedHandler
@@ -43,7 +43,7 @@ def test_missing_command_handler_raises_error(uow: UnitOfWork):
     Test commands must have handlers
     """
     command = CreateUserCommand("pepe")
-    with pytest.raises(MissingCommandHandler):
+    with pytest.raises(MissingHandlerError):
         with uow:
             uow.handle_command(command)
 

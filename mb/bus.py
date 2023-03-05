@@ -5,10 +5,10 @@ from collections import defaultdict
 
 from mb.commands import Command
 from mb.events import Event
-from mb.exceptions import DuplicatedCommandHandler
-from mb.exceptions import InvalidMessage
-from mb.exceptions import InvalidMessageType
-from mb.exceptions import MissingCommandHandler
+from mb.exceptions import DuplicatedHandlerError
+from mb.exceptions import InvalidMessageError
+from mb.exceptions import MessageTypeError
+from mb.exceptions import MissingHandlerError
 from mb.unit_of_work import UnitOfWork
 from mb.injection import PreparedHandler
 
@@ -53,10 +53,10 @@ class MessageBus:
         """
         Subscribe to an event type. An event may have multiple handlers
 
-        :raises InvalidMessageType:
+        :raises MessageTypeError:
         """
         if not self.__is_event_type(cls):
-            raise InvalidMessageType(f"This is not an event class: '{cls}'")
+            raise MessageTypeError(f"This is not an event class: '{cls}'")
 
         if handler in self.event_handlers:
             logger.info(
@@ -69,11 +69,11 @@ class MessageBus:
         """
         Set the command handler for this command. Only one handler allowed.
 
-        :raises InvalidMessageType:
+        :raises MessageTypeError:
         :raises ConfigError: if there is already a handler
         """
         if not self.__is_command_type(cls):
-            raise InvalidMessageType(f"This is not a command class: '{cls}'")
+            raise MessageTypeError(f"This is not a command class: '{cls}'")
 
         current = self.command_handlers.get(cls, None)
         if current is None:
@@ -83,7 +83,7 @@ class MessageBus:
                 "Ignoring duplicated subscribe of handler '{handler}' to '{cls}'"
             )
         else:
-            raise DuplicatedCommandHandler(
+            raise DuplicatedHandlerError(
                 f"Duplicated handler for command '{cls}'. "
                 f"The handler '{handler}' overrides the current '{current}'"
             )
@@ -98,16 +98,16 @@ class MessageBus:
         """
         Triggers the command handler. Handler exceptions are propagated
 
-        :raises InvalidMessage: if this isn't a Command
-        :raises MissingCommandHandler: if there's no handler configured for the command
+        :raises InvalidMessageError: if this isn't a Command
+        :raises MissingHandlerError: if there's no handler configured for the command
         """
         if not isinstance(command, Command):
-            raise InvalidMessage(f"This is not an command: '{command}'")
+            raise InvalidMessageError(f"This is not an command: '{command}'")
 
         try:
             handler = self.command_handlers[type(command)]
         except KeyError:
-            raise MissingCommandHandler(command)
+            raise MissingHandlerError(command)
 
         logger.debug(f"Handling command '{command}': calling '{handler}'")
         prepared = PreparedHandler(handler, command, uow)
@@ -116,7 +116,12 @@ class MessageBus:
     def _handle_event(self, event: Event, uow: UnitOfWork) -> None:
         """
         Triggers the event handlers. Handler exceptions are captured and error-logged.
+
+        :raises InvalidMessageError: if this isn't an Event
         """
+        if not isinstance(event, Event):
+            raise InvalidMessageError(f"This is not an event: '{event}'")
+
         # Collect handlers
         seen: set[t.Callable] = set()
         handlers: list[t.Callable] = []

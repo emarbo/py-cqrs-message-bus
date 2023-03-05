@@ -1,7 +1,7 @@
 import typing as t
 
-from mb.exceptions import CQProgrammingError
-from mb.exceptions import UowContextRequired
+from mb.exceptions import ProgrammingError
+from mb.exceptions import UowContextRequiredError
 from mb.unit_of_work.base import UnitOfWork
 from mb.unit_of_work.utils.events_collector import DedupeEventsFifo
 
@@ -66,7 +66,7 @@ class NestedUnitOfWork(UnitOfWork):
 
     def _ensure_context(self):
         if not self.stack:
-            raise UowContextRequired("No transaction in progress")
+            raise UowContextRequiredError("No transaction in progress")
 
     # Events methods
 
@@ -82,7 +82,7 @@ class NestedUnitOfWork(UnitOfWork):
         Called on commit the outermost transaction
         """
         if self.stack:
-            raise CQProgrammingError("This call should happen outside the context")
+            raise ProgrammingError("This call should happen outside the context")
         for event in events:
             self._handle_event(event)
 

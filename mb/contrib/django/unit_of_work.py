@@ -42,7 +42,7 @@ class DjangoUnitOfWork(NestedUnitOfWork):
         ...
         >>> # BAD
         >>> user = User(...)
-        >>> user.save()  # Raises UowContextRequired!
+        >>> user.save()  # Raises UowContextRequiredError!
 
     ---------------------------------
     UoW transactions VS Django atomic

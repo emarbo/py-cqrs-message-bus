@@ -1,8 +1,8 @@
 import inspect
 import typing as t
 
-from mb.exceptions import CQProgrammingError, DuplicatedCommandHandler
-from mb.exceptions import InjectError
+from mb.exceptions import ProgrammingError, DuplicatedHandlerError
+from mb.exceptions import InjectionError
 from mb.messages import Message
 from mb.unit_of_work import UnitOfWork
 
@@ -68,7 +68,7 @@ class PreparedHandler(t.Generic[P, R]):
                     value = param.default
             # can't do anything
             if value is not_defined:
-                raise InjectError(name, handler)
+                raise InjectionError(name, handler)
             # collect
             if param.POSITIONAL_ONLY:
                 args.append(value)
@@ -78,4 +78,4 @@ class PreparedHandler(t.Generic[P, R]):
         try:
             return signature.bind(*args, **kwargs)
         except TypeError:
-            raise CQProgrammingError("Unexpected injection error")
+            raise ProgrammingError("Unexpected injection error")

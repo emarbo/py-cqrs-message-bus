@@ -3,7 +3,6 @@ import typing as t
 if t.TYPE_CHECKING:
     from mb.commands import Command
 
-# TODO: Sufix all errors with Error (and remove some prefixes?)
 # TODO: Move some message str to the __init__ of these exceptions
 
 # --------------------------------------
@@ -11,25 +10,19 @@ if t.TYPE_CHECKING:
 # --------------------------------------
 
 
-class CQBaseError(BaseException):
-    """
-    Uncatchable error
-    """
-
-
-class CQProgrammingError(CQBaseError, RuntimeError):
+class ProgrammingError(BaseException):
     """
     Uncatchable error. Code violates some invariant
     """
 
 
-class CQError(Exception):
+class MbError(Exception):
     """
     Library root exception
     """
 
 
-class ConfigError(CQError):
+class ConfigError(MbError):
     """
     General configuration error
     """
@@ -40,13 +33,13 @@ class ConfigError(CQError):
 # --------------------------------------
 
 
-class InvalidMessageName(ConfigError, TypeError):
+class InvalidNameError(ConfigError, TypeError):
     """
     The Message.NAME must be an string
     """
 
 
-class DuplicatedMessageName(ConfigError, TypeError):
+class DuplicatedNameError(ConfigError, TypeError):
     """
     Two messages have the same NAME
     """
@@ -57,13 +50,13 @@ class DuplicatedMessageName(ConfigError, TypeError):
 # --------------------------------------
 
 
-class DuplicatedCommandHandler(ConfigError):
+class DuplicatedHandlerError(ConfigError):
     """
     A Command can have only one handler
     """
 
 
-class MissingCommandHandler(ConfigError, RuntimeError):
+class MissingHandlerError(ConfigError, RuntimeError):
     """
     No handler found for a Command
     """
@@ -74,7 +67,7 @@ class MissingCommandHandler(ConfigError, RuntimeError):
         super().__init__(self.message, self.command)
 
 
-class InvalidMessageType(ConfigError, TypeError):
+class MessageTypeError(ConfigError, TypeError):
     """
     The Bus only handles Messages
     """
@@ -85,13 +78,13 @@ class InvalidMessageType(ConfigError, TypeError):
 # --------------------------------------
 
 
-class InvalidMessage(CQError, TypeError):
+class InvalidMessageError(MbError, TypeError):
     """
     The Bus only handles Messages
     """
 
 
-class InjectError(CQError, RuntimeError):
+class InjectionError(MbError, RuntimeError):
     """
     The argument couldn't be injected
     """
@@ -112,7 +105,7 @@ class InjectError(CQError, RuntimeError):
 # --------------------------------------
 
 
-class UowContextRequired(CQError):
+class UowContextRequiredError(MbError):
     """
     Code is using the UnitOfWork outside the context or
     the begin/commit/rollback calls are unpaired.
