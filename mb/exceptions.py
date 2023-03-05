@@ -114,3 +114,10 @@ class UowContextRequiredError(MbError):
         ...     uow.emit_event(event)  # Good
         ... uow.emit_event(event)  # Bad
     """
+
+
+class UowContextBrokenError(MbError):
+    """
+    UoW contexts are like parenthesis, they might be nested but
+    pairs must match. This error is raised when pairs doesn't match.
+    """

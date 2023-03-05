@@ -1,8 +1,10 @@
+from contextvars import Token
 import typing as t
 
 from mb.commands import Command
 from mb.events import Event
-from mb.exceptions import InvalidMessageError
+from mb.exceptions import InvalidMessageError, UowContextBrokenError
+from mb.globals import _uow_context
 
 if t.TYPE_CHECKING:
     from mb.bus import MessageBus
@@ -14,15 +16,23 @@ class UnitOfWork:
     """
 
     bus: "MessageBus"
+    _uow_context_tokens: list[Token]
 
     def __init__(self, bus: "MessageBus"):
         self.bus = bus
+        self._uow_context_tokens = []
 
     def __enter__(self):
+        self._uow_context_tokens.append(_uow_context.set(self))
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        pass
+        uow = _uow_context.get(None)
+        _uow_context.reset(self._uow_context_tokens.pop())
+        if uow is not self:
+            raise UowContextBrokenError(
+                "UoW context missmatch. Did you call __enter__ or __exit__ manually?"
+            )
 
     def handle_command(self, command: Command) -> t.Any:
         """

@@ -1,12 +1,12 @@
 import typing as t
 
 from django.db.models import Model
-from django.db.transaction import get_connection
 
 from mb.exceptions import UowContextRequiredError
+from mb.globals import get_current_uow
 
 if t.TYPE_CHECKING:
-    from mb.unit_of_work.base import UnitOfWork
+    from mb.contrib.django.unit_of_work import DjangoUnitOfWork
 
 
 class BusModel(Model):
@@ -14,13 +14,11 @@ class BusModel(Model):
         abstract = True
 
     @property
-    def uow(self) -> "UnitOfWork":
-        connection = get_connection(using=self._state.db)
-
-        uow: t.Optional["UnitOfWork"] = getattr(connection, "uow", None)
+    def uow(self) -> "DjangoUnitOfWork":
+        uow: t.Optional["DjangoUnitOfWork"] = get_current_uow()
         if not uow:
             raise UowContextRequiredError(
-                "This instance is not attached ot any UnitOfWork. "
+                "This instance is not attached ot any DjangoUnitOfWork. "
                 "Did you forget opening the bus transaction (with uow:...)? "
             )
         return uow

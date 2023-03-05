@@ -37,10 +37,12 @@ class NestedUnitOfWork(UnitOfWork):
     # Transaction methods
 
     def __enter__(self):
+        super().__enter__()
         self._begin()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
+        super().__exit__(exc_type, exc_value, traceback)
         if not exc_type:
             self._commit()
         else:

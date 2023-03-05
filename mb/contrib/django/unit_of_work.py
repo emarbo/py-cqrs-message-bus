@@ -1,17 +1,9 @@
 import typing as t
 from contextlib import contextmanager
 
-from django.db import DEFAULT_DB_ALIAS
 from django.db.transaction import atomic
-from django.db.transaction import get_connection
-from mb.contrib.django.exceptions import DjangoUnitOfWorkBindError
 
 from mb.unit_of_work.nested import NestedUnitOfWork
-from mb.unit_of_work.utils.events_collector import DedupeEventsFifo
-
-if t.TYPE_CHECKING:
-    from mb.bus import MessageBus
-    from mb.unit_of_work.utils.events_collector import EventsCollector
 
 Using = t.Union[list[str], str, None]
 
@@ -128,61 +120,8 @@ class DjangoUnitOfWork(NestedUnitOfWork):
     We, as developers, usually think about a transaction as a context block.
     """
 
-    using: list[str]
-
-    def __init__(
-        self,
-        bus: "MessageBus",
-        events_collector_cls: type["EventsCollector"] = DedupeEventsFifo,
-        bind_connections: Using = None,
-    ):
-        """
-        :param bind_connections: Bind the UoW/Bus to these database connections.
-                                 Defaults to ["default"].
-        """
-        super().__init__(bus, events_collector_cls=events_collector_cls)
-
-        if not bind_connections:
-            self.using = [DEFAULT_DB_ALIAS]
-        elif isinstance(bind_connections, str):
-            self.using = [bind_connections]
-        elif isinstance(bind_connections, list):
-            self.using = bind_connections
-
     @contextmanager
     def atomic(self, using=None):
         with self:
             with atomic(using=using):
                 yield
-
-    def _begin(self):
-        if not self.stack:
-            self._bind_connections()
-        super()._begin()
-
-    def _end(self):
-        transaction = super()._end()
-        if not self.stack:
-            self._unbind_connections()
-        return transaction
-
-    def _bind_connections(self):
-        for using in self.using:
-            self._bind_connection(using)
-
-    def _bind_connection(self, using: str):
-        connection = get_connection(using)
-        current_uow = getattr(connection, "uow", None)
-        if current_uow and current_uow != self:
-            message = (
-                f"Cannot bind the UoW {self} to the current database transaction "
-                f"because the UoW {current_uow} was already bound to it. "
-                "Only one UoW can be bound to a database transaction."
-            )
-            raise DjangoUnitOfWorkBindError(message)
-        connection.uow = self
-
-    def _unbind_connections(self):
-        for using in self.using:
-            connection = get_connection(using)
-            connection.uow = None
