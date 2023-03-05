@@ -3,7 +3,6 @@ import typing as t
 if t.TYPE_CHECKING:
     from mb.commands import Command
 
-# TODO: Move some message str to the __init__ of these exceptions
 
 # --------------------------------------
 # Base exceptions
