@@ -37,6 +37,12 @@ logger = logging.getLogger(__name__)
 #
 
 
+#
+# TODO: Allow event handlers to propagate exceptions. This is very helpful for tests
+# that work with a preconfigured bus. Otherwise the test does not stop at the error!
+#
+
+
 class MessageBus:
     """
     An in-memory message bus.
@@ -51,7 +57,9 @@ class MessageBus:
 
     def subscribe_event(self, cls: type[Event], handler: t.Callable) -> None:
         """
-        Subscribe to an event type. An event may have multiple handlers
+        Subscribe to an event type.
+
+        An event may have multiple handlers
 
         :raises MessageTypeError:
         """
@@ -87,6 +95,33 @@ class MessageBus:
                 f"Duplicated handler for command '{cls}'. "
                 f"The handler '{handler}' overrides the current '{current}'"
             )
+
+    def event_handler(self, cls: type[Event]):
+        """
+        Subscribes the decorated function to the event type.
+
+        :raises MessageTypeError:
+        """
+
+        def decorator(handler: t.Callable):
+            self.subscribe_event(cls, handler)
+            return handler
+
+        return decorator
+
+    def command_handler(self, cls: type[Command]):
+        """
+        Registers the decorated function as the command handler.
+
+        :raises MessageTypeError:
+        :raises ConfigError: if there is already a handler
+        """
+
+        def decorator(handler: t.Callable):
+            self.subscribe_command(cls, handler)
+            return handler
+
+        return decorator
 
     def __is_command_type(self, thing):
         return isinstance(thing, type) and issubclass(thing, Command)
@@ -130,6 +165,10 @@ class MessageBus:
                 if handler not in seen:
                     handlers.append(handler)
                     seen.add(handler)
+        #
+        # TODO: Avoid using Event.__str__ in messages because there might
+        # be an implementation error. Better use the NAME and maybe de ID
+        #
 
         # Call handlers
         logger.debug(f"Handling event '{event}': {len(handlers)} handlers")
