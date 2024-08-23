@@ -1,6 +1,7 @@
+from app.common.bus.bus import bus
+
 from mb.contrib.django.unit_of_work import DjangoUnitOfWork
 from mb.unit_of_work import UnitOfWork
-from app.common.bus.bus import bus
 
 
 class UnitOfWorkInjectionMiddleware:

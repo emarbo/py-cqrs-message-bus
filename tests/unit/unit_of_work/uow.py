@@ -57,7 +57,7 @@ class Base(t.Generic[UOW]):
 
 class _TestUnitOfWork(Base[UOW]):
     """
-    Test shared UnitOfWork behavior.
+    Test UnitOfWork implementing nested transactions management.
 
     Use case: create users on the system.
     """
@@ -95,14 +95,6 @@ class _TestUnitOfWork(Base[UOW]):
         assert user_created_handler.calls
         assert user_created_handler.calls[0].username == command.username
         self.assert_user_created(command.username)
-
-
-class _TestTransactionalUnitOfWork(_TestUnitOfWork[UOW]):
-    """
-    Test UnitOfWork implementing nested transactions management.
-
-    Use case: create users on the system.
-    """
 
     def test_commit_transaction(
         self,
@@ -185,3 +177,7 @@ class _TestTransactionalUnitOfWork(_TestUnitOfWork[UOW]):
         assert user_created_handler.calls[0].username == command_2.username
         self.assert_user_not_created(command_1.username)
         self.assert_user_created(command_2.username)
+
+
+class TestUnitOfWork(_TestUnitOfWork[UnitOfWork]):
+    pass

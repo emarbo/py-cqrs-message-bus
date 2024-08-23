@@ -1,6 +1,6 @@
 from mb.events import Event
 from mb.messages import Message
-from mb.unit_of_work.base import UnitOfWork
+from mb.unit_of_work import UnitOfWork
 from mb.utils.tracked_handler import tracked_handler
 from tests.fixtures.scenarios.create_user import CreateUserCommand
 

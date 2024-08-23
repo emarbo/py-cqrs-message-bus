@@ -1,11 +1,12 @@
-import pytest
 import typing as t
+
+import pytest
 
 from mb.bus import MessageBus
 from mb.events import Event
 from mb.exceptions import MissingHandlerError
 from mb.messages import Message
-from mb.unit_of_work.base import UnitOfWork
+from mb.unit_of_work import UnitOfWork
 from mb.utils.tracked_handler import TrackedHandler
 from tests.fixtures.scenarios.create_user import CreateUserCommand
 from tests.fixtures.scenarios.create_user import UserCreatedEvent

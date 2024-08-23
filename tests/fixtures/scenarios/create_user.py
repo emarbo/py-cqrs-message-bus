@@ -3,13 +3,12 @@ from dataclasses import dataclass
 
 import pytest
 
+from mb import MessageBus
 from mb.commands import Command
 from mb.events import Event
+from mb.unit_of_work import UnitOfWork
 from mb.utils.tracked_handler import TrackedHandler
 from mb.utils.tracked_handler import tracked_handler
-from mb import MessageBus
-from mb.unit_of_work.base import UnitOfWork
-
 
 # --------------------------------------
 # Messages definition

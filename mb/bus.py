@@ -9,8 +9,8 @@ from mb.exceptions import DuplicatedHandlerError
 from mb.exceptions import InvalidMessageError
 from mb.exceptions import MessageTypeError
 from mb.exceptions import MissingHandlerError
-from mb.unit_of_work import UnitOfWork
 from mb.injection import PreparedHandler
+from mb.unit_of_work import UnitOfWork
 
 logger = logging.getLogger(__name__)
 

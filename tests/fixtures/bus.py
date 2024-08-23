@@ -2,7 +2,7 @@ import pytest
 
 from mb.bus import MessageBus
 from mb.messages import Message
-from mb.unit_of_work.nested import NestedUnitOfWork
+from mb.unit_of_work import UnitOfWork
 from mb.utils.tracked_handler import TrackedHandler
 from mb.utils.tracked_handler import tracked_handler
 
@@ -14,7 +14,7 @@ def bus():
 
 @pytest.fixture()
 def uow(bus):
-    return NestedUnitOfWork(bus)
+    return UnitOfWork(bus)
 
 
 @pytest.fixture()

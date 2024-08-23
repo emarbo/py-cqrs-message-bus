@@ -3,12 +3,12 @@ from contextlib import contextmanager
 
 from django.db.transaction import atomic
 
-from mb.unit_of_work.nested import NestedUnitOfWork
+from mb.unit_of_work import UnitOfWork
 
 Using = t.Union[list[str], str, None]
 
 
-class DjangoUnitOfWork(NestedUnitOfWork):
+class DjangoUnitOfWork(UnitOfWork):
     """
     Integrates the UoW with the Django ORM machinery.
 

@@ -1,8 +1,8 @@
 import inspect
 import typing as t
 
-from mb.exceptions import ProgrammingError, DuplicatedHandlerError
 from mb.exceptions import InjectionError
+from mb.exceptions import ProgrammingError
 from mb.messages import Message
 from mb.unit_of_work import UnitOfWork
 

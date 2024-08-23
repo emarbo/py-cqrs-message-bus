@@ -1,11 +1,11 @@
 import contextlib
 
 from mb.contrib.django.unit_of_work import DjangoUnitOfWork
-from tests.unit.unit_of_work.base import _TestTransactionalUnitOfWork
+from tests.unit.unit_of_work.uow import _TestUnitOfWork
 
 
 class TestNestedUnitOfWork(
-    _TestTransactionalUnitOfWork[DjangoUnitOfWork],
+    _TestUnitOfWork[DjangoUnitOfWork],
 ):
     @contextlib.contextmanager
     def open_context(self, uow: DjangoUnitOfWork):
