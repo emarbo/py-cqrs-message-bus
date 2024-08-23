@@ -104,9 +104,9 @@ class InjectionError(MbError, RuntimeError):
 # --------------------------------------
 
 
-class UowContextRequiredError(MbError):
+class UowTransactionError(MbError):
     """
-    Code is using the UnitOfWork outside the context or
+    Code is using the UnitOfWork outside a transaction or
     the begin/commit/rollback calls are unpaired.
 
         >>> uow = UnitOfWork(bus)
@@ -116,7 +116,7 @@ class UowContextRequiredError(MbError):
     """
 
 
-class UowContextBrokenError(MbError):
+class UowContextError(MbError):
     """
     UoW contexts are like parenthesis, they might be nested but
     pairs must match. This error is raised when pairs doesn't match.

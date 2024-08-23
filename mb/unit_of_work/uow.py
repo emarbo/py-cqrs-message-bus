@@ -5,9 +5,9 @@ from mb.commands import Command
 from mb.events import Event
 from mb.exceptions import InvalidMessageError
 from mb.exceptions import ProgrammingError
-from mb.exceptions import UowContextBrokenError
-from mb.exceptions import UowContextRequiredError
-from mb.globals import _uow_context
+from mb.exceptions import UowContextError
+from mb.exceptions import UowTransactionError
+from mb.globals import _uow_ctxvar
 from mb.unit_of_work.utils.events_collector import EventsFifo
 
 if t.TYPE_CHECKING:
@@ -55,36 +55,42 @@ class UnitOfWork:
     bus: "MessageBus"
 
     stack: list["Transaction"]
-    _context_tokens: list[Token]
+    autocommit: bool
+    _ctxvar_tokens: list[Token]
 
     events_collector_cls: type["EventsCollector"]
 
     def __init__(
         self,
         bus: "MessageBus",
+        autocommit=True,
         events_collector_cls: type["EventsCollector"] = EventsFifo,
     ):
         self.bus = bus
 
         self.stack = []
-        self._context_tokens = []
+        self.autocommit = autocommit
+        self._ctxvar_tokens = []
 
         self.events_collector_cls = events_collector_cls
 
     # Transaction management
 
     def __enter__(self):
-        self._context_tokens.append(_uow_context.set(self))
+        self._ctxvar_tokens.append(_uow_ctxvar.set(self))
 
         self._begin()
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        uow = _uow_context.get(None)
-        _uow_context.reset(self._context_tokens.pop())
+        uow = _uow_ctxvar.get(None)
+        _uow_ctxvar.reset(self._ctxvar_tokens.pop())
         if uow is not self:
-            raise UowContextBrokenError(
-                "UoW context missmatch. Did you call __enter__ or __exit__ manually?"
+            raise UowContextError(
+                "The global UoW does not match the uow of the transaction being "
+                "closed. This may happen when you open and close a transaction in "
+                "a different thread or async context. Transactions must be handled "
+                "by a single thread or async context."
             )
 
         if not exc_type:
@@ -107,12 +113,12 @@ class UnitOfWork:
         self._end().rollback()
 
     def _end(self) -> "Transaction":
-        self._ensure_transaction()
-        return self.stack.pop()
-
-    def _ensure_transaction(self):
         if not self.stack:
-            raise UowContextRequiredError("No transaction in progress")
+            raise UowTransactionError(
+                "No transaction in progress. "
+                "Did you call __enter__ or __exit__ manually?"
+            )
+        return self.stack.pop()
 
     # Command events
 
@@ -146,10 +152,19 @@ class UnitOfWork:
 
     def _emit_event(self, event: Event):
         """
-        Collect on the current transaction
+        Collect or handle the event
         """
-        self._ensure_transaction()
-        self.stack[-1].collect_event(event)
+        if self.stack:
+            # Inside a transaction block
+            self.stack[-1].collect_event(event)
+        else:
+            # Outside a transaction block
+            if self.autocommit:
+                self._handle_event(event)
+            else:
+                raise UowTransactionError(
+                    "No transaction in progress and autocommit is OFF"
+                )
 
     def _handle_events(self, events: t.Iterable[Event]):
         """
@@ -157,6 +172,7 @@ class UnitOfWork:
         """
         if self.stack:
             raise ProgrammingError("This call should happen outside a transaction")
+
         for event in events:
             self._handle_event(event)
 

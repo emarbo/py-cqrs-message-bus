@@ -2,7 +2,7 @@ import typing as t
 
 from django.db.models import Model
 
-from mb.exceptions import UowContextRequiredError
+from mb.exceptions import UowTransactionError
 from mb.globals import get_current_uow
 
 if t.TYPE_CHECKING:
@@ -17,7 +17,7 @@ class BusModel(Model):
     def uow(self) -> "DjangoUnitOfWork":
         uow: t.Optional["DjangoUnitOfWork"] = get_current_uow()
         if not uow:
-            raise UowContextRequiredError(
+            raise UowTransactionError(
                 "This instance is not attached ot any DjangoUnitOfWork. "
                 "Did you forget opening the bus transaction (with uow:...)? "
             )
