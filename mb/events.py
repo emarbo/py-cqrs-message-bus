@@ -40,10 +40,9 @@ class Event(Message, metaclass=EventMeta):
         persistent. For example, a `UserCreated` event.
 
         However, some events might signal important information that must be recorded
-        or handled somehow. This events should be persistent to outlive their UoW
-        transaction.
+        or handled somehow. This events should outlive their UoW transaction.
 
-        For instance, let's suppose an application handles authorization erros by
+        For instance, let's suppose an application handles authorization errors by
         raising an exception that is later converted into a HTTP response by some
         framework middleware. At the same time, the application wants to track these
         errors using events. Without this ability, it will be very annoying or even
