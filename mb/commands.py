@@ -1,3 +1,4 @@
+import typing as t
 from mb.messages import Message
 from mb.messages import MessageMeta
 
@@ -31,3 +32,7 @@ class Command(Message, metaclass=CommandMeta):
     # TODO: Could we define a CommandResult inside a Command?
     # In this way, we could use typing to define the output of
     # UnitOfWork.handle_command and preventively detect errors.
+
+
+def is_command_type(thing) -> t.TypeGuard[type[Command]]:
+    return isinstance(thing, type) and issubclass(thing, Command)

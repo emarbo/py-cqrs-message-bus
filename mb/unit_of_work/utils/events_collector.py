@@ -27,6 +27,9 @@ class EventsCollector(t.Collection["Event"], abc.ABC):
 
     @abc.abstractmethod
     def clear(self):
+        """
+        Clear **non persistent** events
+        """
         raise NotImplementedError()
 
     @abc.abstractmethod
@@ -62,7 +65,7 @@ class EventsFifo(EventsCollector):
         self.queue.extend(events)
 
     def clear(self):
-        self.queue = []
+        self.queue = [e for e in self.queue if not e.is_persistent()]
 
     def __len__(self):
         return len(self.queue)
@@ -101,8 +104,8 @@ class DedupeEventsFifo(EventsCollector):
             self.push(event)
 
     def clear(self):
-        self.queue = []
-        self.seen = set()
+        self.queue = [e for e in self.queue if not e.is_persistent()]
+        self.seen = set(self.queue)
 
     def __len__(self):
         return len(self.queue)

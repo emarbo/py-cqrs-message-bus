@@ -55,7 +55,7 @@ class DuplicatedHandlerError(ConfigError):
     """
 
 
-class MissingHandlerError(ConfigError, RuntimeError):
+class MissingHandlerError(ConfigError, LookupError):
     """
     No handler found for a Command
     """

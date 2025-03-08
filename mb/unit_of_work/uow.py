@@ -1,4 +1,5 @@
 import typing as t
+import logging
 from contextvars import Token
 
 from mb.commands import Command
@@ -8,17 +9,14 @@ from mb.exceptions import ProgrammingError
 from mb.exceptions import UowContextError
 from mb.exceptions import UowTransactionError
 from mb.globals import _uow_ctxvar
+from mb.injection import PreparedHandler
 from mb.unit_of_work.utils.events_collector import EventsFifo
 
 if t.TYPE_CHECKING:
     from mb.bus import MessageBus
     from mb.unit_of_work.utils.events_collector import EventsCollector
 
-
-# TODO: Provide an autocommit mode to be paired with most of the
-# database transaction managements. This is specially helpful when playing
-# on a python terminal. Besides of that, the autocommit mode is the default
-# mode for most of the database connections.
+logger = logging.getLogger(__name__)
 
 
 class UnitOfWork:
@@ -106,12 +104,6 @@ class UnitOfWork:
         )
         self.stack.append(transaction)
 
-    def _commit(self):
-        self._end().commit()
-
-    def _rollback(self):
-        self._end().rollback()
-
     def _end(self) -> "Transaction":
         if not self.stack:
             raise UowTransactionError(
@@ -120,21 +112,36 @@ class UnitOfWork:
             )
         return self.stack.pop()
 
-    # Command events
+    def _commit(self):
+        transaction = self._end()
+        transaction.commit()
+
+        if not self.stack:
+            self._handle_events(transaction.events)
+
+    def _rollback(self):
+        transaction = self._end()
+        transaction.rollback()
+
+        # Even if the outermost transaction was rolled back, they
+        # may contain persistent events to be handled.
+        if not self.stack:
+            self._handle_events(transaction.events)
+
+    # Command methods
 
     def handle_command(self, command: Command) -> t.Any:
         """
         Triggers the command handler. Handler exceptions are propagated
 
-        :raises InvalidMessage: if this isn't an Event
+        :raises InvalidMessage: if this isn't a Command
         :raises MissingCommandHandler: if there's no handler configured for the command
         """
-        if not isinstance(command, Command):
-            raise InvalidMessageError(f"This is not a command: '{command}'")
-        return self._handle_command(command)
+        handler = self.bus.get_command_handler(command)
 
-    def _handle_command(self, command: Command) -> t.Any:
-        return self.bus._handle_command(command, self)
+        logger.debug(f"Handling command '{command.NAME}': calling '{handler}'")
+        prepared = PreparedHandler(handler, command, self)
+        return prepared()
 
     # Event methods
 
@@ -148,19 +155,15 @@ class UnitOfWork:
         """
         if not isinstance(event, Event):
             raise InvalidMessageError(f"This is not an event: '{event}'")
-        self._emit_event(event)
 
-    def _emit_event(self, event: Event):
-        """
-        Collect or handle the event
-        """
         if self.stack:
             # Inside a transaction block
             self.stack[-1].collect_event(event)
+
         else:
             # Outside a transaction block
             if self.autocommit:
-                self._handle_event(event)
+                self._handle_events([event])
             else:
                 raise UowTransactionError(
                     "No transaction in progress and autocommit is OFF"
@@ -174,21 +177,32 @@ class UnitOfWork:
             raise ProgrammingError("This call should happen outside a transaction")
 
         for event in events:
-            self._handle_event(event)
-
-    def _handle_event(self, event: Event):
-        self.bus._handle_event(event, self)
+            handlers = self.bus.get_event_handlers(event)
+            for handler in handlers:
+                logger.debug(f"Handling event '{event.NAME}': {len(handlers)} handlers")
+                for handler in handlers:
+                    logger.debug(f"Handling event '{event.NAME}': calling '{handler}'")
+                    prepared = PreparedHandler(handler, event, self)
+                    try:
+                        prepared()
+                    except Exception:
+                        logger.exception(f"Exception handling event '{event.NAME}'")
 
 
 class Transaction:
     """
-    The transaction holds the events emmitted during its lifespan and
-    eventually calls the handlers on commit. If the transaction is
-    rolled back, their events are also discarded.
+    The transaction holds the events emmitted during its lifespan.
 
-    Nested transactions do the same but differ on commit. When committing
-    a nested transaction, it just passes its events to the parent transaction
-    instead of calling the handlers.
+    The transactions are always managed by the unit of work that creates and removes
+    them from the current stack as required. When events are emitted, the unit of work
+    stores them in the transaction in progress.
+
+    When a nested transaction is committed or rolled back, it passes the collected
+    events to their parent. Even rolled back transactions may pass events if they're
+    marked as persistent.
+
+    Once the outermost transaction is committed or rolled back, the unit of work will
+    handle the events that reamin in the transaction.
     """
 
     uow: "UnitOfWork"
@@ -199,7 +213,7 @@ class Transaction:
         self,
         uow: "UnitOfWork",
         events: "EventsCollector",
-        parent: "Transaction" = None,
+        parent: "Transaction" | None = None,
     ):
         self.uow = uow
         self.events = events
@@ -208,8 +222,6 @@ class Transaction:
     def commit(self):
         if self.parent:
             self.parent.collect_event_many(self.events)
-        else:
-            self.uow._handle_events(self.events)
 
     def rollback(self):
         self.events.clear()
