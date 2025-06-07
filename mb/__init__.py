@@ -1,4 +1,13 @@
-from mb.bus import MessageBus  # noqa
-from mb.commands import Command  # noqa
-from mb.events import Event  # noqa
-from mb.messages import Message  # noqae
+from mb.unit_of_work import UnitOfWork
+from mb.bus import MessageBus
+from mb.commands import Command
+from mb.events import Event
+from mb.messages import Message
+
+__all__ = [
+    "UnitOfWork",
+    "MessageBus",
+    "Command",
+    "Event",
+    "Message",
+]

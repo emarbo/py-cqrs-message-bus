@@ -33,23 +33,10 @@ class Event(Message, metaclass=EventMeta):
 
     def is_persistent(self):
         """
-        Persistent events are handled even when the UoW transaction is rolled back.
+        Whether the event is persisted or discarded after a transaction roll back.
 
-        Most events reflect database changes and does not make sense to emit them
-        if the change is not persisted in the database. This events shouldn't be
-        persistent. For example, a `UserCreated` event.
-
-        However, some events might signal important information that must be recorded
-        or handled somehow. This events should outlive their UoW transaction.
-
-        For instance, let's suppose an application handles authorization errors by
-        raising an exception that is later converted into a HTTP response by some
-        framework middleware. At the same time, the application wants to track these
-        errors using events. Without this ability, it will be very annoying or even
-        impossible to do it.
-
-        The example applies to any scenario where an exception is used to break the
-        normal flow, but the event must be emitted.
+        Events that reflect metrics or failures may return True, so they are handled
+        even when an error is raised while handling a command.
         """
         return False
 

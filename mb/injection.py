@@ -13,7 +13,16 @@ P = t.ParamSpec("P")
 R = t.TypeVar("R")
 
 
+# TODO: The injection should be done beforehand at handler registration. This way
+# (1) we detect configuration errors at startup and (2) there's no need to analyze
+# signature on each call.
+
+
 class PreparedHandler(t.Generic[P, R]):
+    """
+    Injects the message and uow to the handler.
+    """
+
     handler: t.Callable[P, R]
     arguments: inspect.BoundArguments
 

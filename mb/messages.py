@@ -19,11 +19,11 @@ class MessageMeta(type):
         meta._check_name_type(name, dic)
         meta._check_unique_name(name, dic)
 
-        message_type = super().__new__(meta, name, bases, dic, **kw)
+        message_cls = super().__new__(meta, name, bases, dic, **kw)
 
-        meta._messages[message_type.NAME] = message_type  # type: ignore[attr-defined]
+        meta._messages[message_cls.NAME] = message_cls  # type: ignore[attr-defined]
 
-        return message_type
+        return message_cls
 
     @classmethod
     def _set_default_name(cls, name: str, dic: dict[str, t.Any]):
@@ -44,12 +44,12 @@ class MessageMeta(type):
     def _check_unique_name(cls, name: str, dic: dict[str, t.Any]):
         message_name = dic["NAME"]
         try:
-            message_type = cls._messages[message_name]
+            message_cls = cls._messages[message_name]
         except KeyError:
             return
         raise DuplicatedNameError(
             "These messages have the same NAME: "
-            f"'{name}' and '{message_type.__name__}'"
+            f"'{name}' and '{message_cls.__name__}'"
         )
 
     @classmethod

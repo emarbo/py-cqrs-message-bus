@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 import typing as t
 import logging
 from contextvars import Token
@@ -72,31 +73,50 @@ class UnitOfWork:
 
         self.events_collector_cls = events_collector_cls
 
-    # Transaction management
+    @contextmanager
+    def register_globally(self):
+        """
+        Makes this UoW globally available using the :func:`get_current_uow`
+        """
+        self._begin_global()
+        try:
+            yield
+        finally:
+            self._end_global()
 
-    def __enter__(self):
+    def _begin_global(self):
         self._ctxvar_tokens.append(_uow_ctxvar.set(self))
 
-        self._begin()
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
+    def _end_global(self):
         uow = _uow_ctxvar.get(None)
         _uow_ctxvar.reset(self._ctxvar_tokens.pop())
         if uow is not self:
             raise UowContextError(
-                "The global UoW does not match the uow of the transaction being "
-                "closed. This may happen when you open and close a transaction in "
-                "a different thread or async context. Transactions must be handled "
+                "The global UoW does not match the uow being closed. "
+                "This may happen when you open and close a transaction in a "
+                "different thread or async context. Transactions must be handled "
                 "by a single thread or async context."
             )
 
+    def __enter__(self):
+        """
+        Enter global scope and begin transaction
+        """
+        self._begin_global()
+        self._begin_transaction()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """
+        End global scope and commit/rollback transaction
+        """
+        self._end_global()
         if not exc_type:
             self._commit()
         else:
             self._rollback()
 
-    def _begin(self):
+    def _begin_transaction(self):
         transaction = Transaction(
             self,
             self.events_collector_cls(),
@@ -104,7 +124,7 @@ class UnitOfWork:
         )
         self.stack.append(transaction)
 
-    def _end(self) -> "Transaction":
+    def _end_transaction(self) -> "Transaction":
         if not self.stack:
             raise UowTransactionError(
                 "No transaction in progress. "
@@ -113,14 +133,14 @@ class UnitOfWork:
         return self.stack.pop()
 
     def _commit(self):
-        transaction = self._end()
+        transaction = self._end_transaction()
         transaction.commit()
 
         if not self.stack:
             self._handle_events(transaction.events)
 
     def _rollback(self):
-        transaction = self._end()
+        transaction = self._end_transaction()
         transaction.rollback()
 
         # Even if the outermost transaction was rolled back, they

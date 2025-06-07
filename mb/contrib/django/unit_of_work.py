@@ -10,31 +10,9 @@ Using = t.Union[list[str], str, None]
 
 class DjangoUnitOfWork(UnitOfWork):
     """
-    Integrates the UoW with the Django ORM machinery.
+    Provides a handy `atomic` to bind the message bus and database transactions.
 
-    --------------
-    Models binding
-    --------------
-
-    Binds this UoW and MessageBus to the connections of the current thread/context,
-    providing a way for Model instances to access the bus by themselves when running
-    within an UoW transaction.
-
-        >>> from mb.contrib.django.models import BusModel
-        >>> class User(BusModel):
-        ...    def save(self, *a, **kw):
-        ...        super().save(*a, **kw)
-        ...        self.uow.emit_event(UserCreated(self.id))
-        ...
-        >>> # GOOD
-        >>> uow = DjangoUnitOfWork(bus)
-        >>> with uow.atomic():
-        ...     user = User(...)
-        ...     user.save()  # Emits UserCreated in the current uow.
-        ...
-        >>> # BAD
-        >>> user = User(...)
-        >>> user.save()  # Raises UowContextRequiredError!
+    No support provided for multiple connections or databases yet.
 
     ---------------------------------
     UoW transactions VS Django atomic
