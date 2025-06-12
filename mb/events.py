@@ -31,7 +31,7 @@ class Event(Message, metaclass=EventMeta):
     The Event base class. To inherit and set the NAME.
     """
 
-    def is_persistent(self):
+    def is_persistent(self) -> bool:
         """
         Whether the event is persisted or discarded after a transaction roll back.
 
