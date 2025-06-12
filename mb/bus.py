@@ -45,6 +45,10 @@ logger = logging.getLogger(__name__)
 #
 
 
+# TODO: Provide an auto transaction in the handler decorator and registration
+# TODO: Provide a DjangoMessageBus that extends the previous feature with autocommit.
+
+
 @t.runtime_checkable
 class EventMatcher(t.Protocol):
     def __call__(self, event: Event) -> bool:
@@ -175,8 +179,7 @@ class MessageBus:
         self.command_handlers = {}
 
         self.ehandlers_by_name = defaultdict(list)
-        self.ehandlers_by_name = defaultdict(list)
-        self.ehandlers_by_func = []
+        self.ehandlers_by_func = defaultdict(list)
 
     def subscribe_command(
         self,
@@ -312,7 +315,7 @@ class MessageBus:
             raise InvalidMessageError("This is not an event", event)
 
         # Collect by name
-        if event.NAME in self.ehandlers_by_name[event.NAME]:
+        if event.NAME in self.ehandlers_by_name:
             handlers.extend(self.ehandlers_by_name[event.NAME])
 
         # Collect by func

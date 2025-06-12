@@ -1,10 +1,11 @@
 from django.db import models
 
-from mb.contrib.django.models import BusModel
+from mb import get_current_uow
+
 from tests.fixtures.scenarios.create_user import UserCreatedEvent
 
 
-class User(BusModel):
+class User(models.Model):
 
     id = models.AutoField(primary_key=True)
     username = models.CharField(max_length=200)
@@ -19,5 +20,6 @@ class User(BusModel):
         super().save(*args, **kwargs)
 
         if is_new:
+            uow = get_current_uow()
             event = UserCreatedEvent(username=self.username)
-            self.uow.emit_event(event)
+            uow.emit_event(event)

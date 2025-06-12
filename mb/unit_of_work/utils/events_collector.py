@@ -65,7 +65,7 @@ class EventsFifo(EventsCollector):
         self.queue.extend(events)
 
     def clear(self):
-        self.queue = [e for e in self.queue if not e.is_persistent()]
+        self.queue = [e for e in self.queue if e.is_persistent()]
 
     def __len__(self):
         return len(self.queue)
@@ -104,7 +104,7 @@ class DedupeEventsFifo(EventsCollector):
             self.push(event)
 
     def clear(self):
-        self.queue = [e for e in self.queue if not e.is_persistent()]
+        self.queue = [e for e in self.queue if e.is_persistent()]
         self.seen = set(self.queue)
 
     def __len__(self):

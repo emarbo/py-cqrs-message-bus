@@ -4,7 +4,9 @@ import typing as t
 from mb.exceptions import InjectionError
 from mb.exceptions import ProgrammingError
 from mb.messages import Message
-from mb.unit_of_work import UnitOfWork
+
+if t.TYPE_CHECKING:
+    from mb.unit_of_work import UnitOfWork
 
 Args = tuple[t.Any, ...]
 Kwargs = dict[str, t.Any]
@@ -26,7 +28,7 @@ class PreparedHandler(t.Generic[P, R]):
     handler: t.Callable[P, R]
     arguments: inspect.BoundArguments
 
-    def __init__(self, handler: t.Callable[P, R], message: Message, uow: UnitOfWork):
+    def __init__(self, handler: t.Callable[P, R], message: Message, uow: "UnitOfWork"):
         self.handler = handler  # type: ignore
         self.arguments = self._prepare_arguments(handler, message, uow)
 
@@ -45,11 +47,13 @@ class PreparedHandler(t.Generic[P, R]):
         self,
         handler: t.Callable,
         message: Message,
-        uow: UnitOfWork,
+        uow: "UnitOfWork",
     ) -> inspect.BoundArguments:
         """
         Returns the arguments to inject into the handler
         """
+        from mb.unit_of_work import UnitOfWork
+
         signature = inspect.signature(handler)
 
         not_defined = object()

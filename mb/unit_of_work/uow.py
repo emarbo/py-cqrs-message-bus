@@ -200,13 +200,11 @@ class UnitOfWork:
             handlers = self.bus.get_event_handlers(event)
             for handler in handlers:
                 logger.debug(f"Handling event '{event.NAME}': {len(handlers)} handlers")
-                for handler in handlers:
-                    logger.debug(f"Handling event '{event.NAME}': calling '{handler}'")
-                    prepared = PreparedHandler(handler, event, self)
-                    try:
-                        prepared()
-                    except Exception:
-                        logger.exception(f"Exception handling event '{event.NAME}'")
+                prepared = PreparedHandler(handler, event, self)
+                try:
+                    prepared()
+                except Exception:
+                    logger.exception(f"Exception handling event '{event.NAME}'")
 
 
 class Transaction:
@@ -233,7 +231,7 @@ class Transaction:
         self,
         uow: "UnitOfWork",
         events: "EventsCollector",
-        parent: "Transaction" | None = None,
+        parent: t.Optional["Transaction"] = None,
     ):
         self.uow = uow
         self.events = events
