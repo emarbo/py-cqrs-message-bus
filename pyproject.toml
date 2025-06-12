@@ -1,6 +1,62 @@
+# --------------------------------------
+# Project metadata
+# --------------------------------------
+
+[project]
+version = "0.3b1"
+requires-python = ">=3.10"
+
+name = "cqrs-message-bus"
+description = "Microframework to apply the CQRS pattern over a message bus"
+keywords = ["CQRS", "Message bus", "Events"]
+
+readme = {file = "README.md", content-type = "text/markdown"}
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+authors = [
+  { name = "Emilio Arenas Bosch", email = "arenas.emilio@gmail.com" }
+]
+
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python :: 3.10",
+  "Operating System :: OS Independent",
+
+  "Environment :: Web Environment",
+  "Framework :: Django :: 4",
+  "Intended Audience :: Developers",
+
+  "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://github.com/emarbo/py-cqrs-message-bus"
+Repository = "https://github.com/emarbo/py-cqrs-message-bus"
+
+
+# --------------------------------------
+# Build
+# --------------------------------------
+
 [build-system]
-requires = ["setuptools>=42"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+packages = [
+  "mb"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+  "mb"
+]
+
+
+# --------------------------------------
+# Developer tools
+# --------------------------------------
 
 [tool.black]
 
