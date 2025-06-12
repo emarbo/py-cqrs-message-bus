@@ -1,14 +1,8 @@
-import pytest
-
-from mb.bus import MessageBus
-from mb.commands import Command
 from mb.events import Event
-from mb.exceptions import MissingHandlerError
 from mb.messages import Message
-from mb.unit_of_work.base import UnitOfWork
-from mb.utils.tracked_handler import TrackedHandler, tracked_handler
+from mb.unit_of_work import UnitOfWork
+from mb.utils.tracked_handler import tracked_handler
 from tests.fixtures.scenarios.create_user import CreateUserCommand
-from tests.fixtures.scenarios.create_user import UserCreatedEvent
 
 
 def test_injection_no_args(uow: UnitOfWork):

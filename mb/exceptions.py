@@ -55,7 +55,7 @@ class DuplicatedHandlerError(ConfigError):
     """
 
 
-class MissingHandlerError(ConfigError, RuntimeError):
+class MissingHandlerError(ConfigError, LookupError):
     """
     No handler found for a Command
     """
@@ -104,13 +104,20 @@ class InjectionError(MbError, RuntimeError):
 # --------------------------------------
 
 
-class UowContextRequiredError(MbError):
+class UowTransactionError(MbError):
     """
-    Code is using the UnitOfWork outside the context or
+    Code is using the UnitOfWork outside a transaction or
     the begin/commit/rollback calls are unpaired.
 
         >>> uow = UnitOfWork(bus)
         >>> with uow:
         ...     uow.emit_event(event)  # Good
         ... uow.emit_event(event)  # Bad
+    """
+
+
+class UowContextError(MbError):
+    """
+    UoW contexts are like parenthesis, they might be nested but
+    pairs must match. This error is raised when pairs doesn't match.
     """

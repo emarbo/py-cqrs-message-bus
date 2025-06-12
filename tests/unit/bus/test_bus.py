@@ -1,11 +1,11 @@
-import pytest
 import typing as t
 
-from mb.bus import MessageBus
-from mb.events import Event
+import pytest
+
+from mb import MessageBus, TypeEventMatcher
+from mb import Event
 from mb.exceptions import MissingHandlerError
-from mb.messages import Message
-from mb.unit_of_work.base import UnitOfWork
+from mb import UnitOfWork
 from mb.utils.tracked_handler import TrackedHandler
 from tests.fixtures.scenarios.create_user import CreateUserCommand
 from tests.fixtures.scenarios.create_user import UserCreatedEvent
@@ -84,7 +84,7 @@ def test_bus_calls_handlers_in_the_event_hierarchy(
     Test subscribing to an event means subscribing to all the children
     """
     # Subscribe to ALL events
-    bus.subscribe_event(Event, handler)
+    bus.subscribe_event(TypeEventMatcher(Event), handler)
 
     event = UserCreatedEvent("pepe")
     with uow:

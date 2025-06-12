@@ -1,6 +1,6 @@
 import functools
-from itertools import chain
 import typing as t
+from itertools import chain
 
 from mb.messages import Message
 

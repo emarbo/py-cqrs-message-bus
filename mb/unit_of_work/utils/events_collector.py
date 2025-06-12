@@ -22,11 +22,26 @@ class EventsCollector(t.Collection["Event"], abc.ABC):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def extend(self, events: "EventsCollector") -> "Event":
+    def extend(self, events: "EventsCollector") -> None:
         raise NotImplementedError()
 
     @abc.abstractmethod
     def clear(self):
+        """
+        Clear **non persistent** events
+        """
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def __len__(self) -> int:
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def __iter__(self) -> t.Iterator["Event"]:
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def __contains__(self, event) -> bool:
         raise NotImplementedError()
 
 
@@ -46,11 +61,11 @@ class EventsFifo(EventsCollector):
     def pop(self) -> "Event":
         return self.queue.pop()
 
-    def extend(self, events: "EventsCollector") -> "Event":
+    def extend(self, events: "EventsCollector"):
         self.queue.extend(events)
 
     def clear(self):
-        self.queue = []
+        self.queue = [e for e in self.queue if e.is_persistent()]
 
     def __len__(self):
         return len(self.queue)
@@ -58,7 +73,7 @@ class EventsFifo(EventsCollector):
     def __iter__(self):
         return iter(self.queue)
 
-    def __contains__(self, event: "Event"):  # type: ignore
+    def __contains__(self, event):
         return event in self.queue
 
 
@@ -84,13 +99,13 @@ class DedupeEventsFifo(EventsCollector):
         self.seen.remove(event)
         return event
 
-    def extend(self, events: "EventsCollector") -> "Event":
+    def extend(self, events: "EventsCollector"):
         for event in events:
             self.push(event)
 
     def clear(self):
-        self.queue = []
-        self.seen = set()
+        self.queue = [e for e in self.queue if e.is_persistent()]
+        self.seen = set(self.queue)
 
     def __len__(self):
         return len(self.queue)
@@ -98,5 +113,5 @@ class DedupeEventsFifo(EventsCollector):
     def __iter__(self):
         return iter(self.queue)
 
-    def __contains__(self, event: "Event"):  # type: ignore
+    def __contains__(self, event):
         return event in self.seen
