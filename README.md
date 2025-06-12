@@ -433,6 +433,57 @@ def bus_middelware(get_response):
         return get_response()
 ```
 
+## Dependency injection
+
+The UnitOfWork injects the command or event to be handled and the UnitOfWork
+itself following these rules:
+
+* The parameter is typed (forward references don't work)
+* The parameter is named "message", "command", "cmd", "event" , "uow" or
+  "unit_of_work"
+* The parameter is positional and has no default value. In this case, the first
+  possition is used for the message and the second for the UoW.
+
+Notice that handlers are not forced to receive this parameters. They may
+receive none or use defaults:
+
+```python
+from mb import MessageBus
+from mb import Event
+
+bus = MessageBus()
+
+@bus.event_handler(Event)
+def handler():
+    """
+    No injection
+    """
+
+@bus.event_handler(Event)
+def handler(extra=None):
+    """
+    No injection
+    """
+
+@bus.event_handler(Event)
+def handler(extra: Event = None):
+    """
+    Injects by annotation. The event must be a subtype of the annotation.
+    """
+
+@bus.event_handler(Event)
+def handler(event):
+    """
+    Injects by name
+    """
+
+@bus.event_handler(Event)
+def handler(m):
+    """
+    Injects by positional argument (first is the event or comand)
+    """
+```
+
 ## Access the current UoW
 
 The current Uow is the latest that called the `register_globally` or was used
