@@ -2,9 +2,9 @@ import typing as t
 from contextvars import ContextVar
 
 if t.TYPE_CHECKING:
-    from mb.unit_of_work import UnitOfWork
-    from mb.events import Event
     from mb.commands import Command
+    from mb.events import Event
+    from mb.unit_of_work import UnitOfWork
 
 
 _uow_ctxvar: ContextVar["UnitOfWork"] = ContextVar("mb.uow")

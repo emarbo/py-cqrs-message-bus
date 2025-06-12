@@ -2,10 +2,11 @@ import typing as t
 
 import pytest
 
-from mb import MessageBus, TypeEventMatcher
 from mb import Event
-from mb.exceptions import MissingHandlerError
+from mb import MessageBus
+from mb import TypeEventMatcher
 from mb import UnitOfWork
+from mb.exceptions import MissingHandlerError
 from mb.utils.tracked_handler import TrackedHandler
 from tests.fixtures.scenarios.create_user import CreateUserCommand
 from tests.fixtures.scenarios.create_user import UserCreatedEvent

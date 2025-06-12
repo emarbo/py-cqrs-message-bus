@@ -1,18 +1,17 @@
-import inspect
 import logging
 import re
 import typing as t
 from collections import defaultdict
 
-from mb.commands import Command, is_command_type
-from mb.events import Event, is_event_type
-from mb.exceptions import ConfigError, DuplicatedHandlerError
+from mb.commands import Command
+from mb.commands import is_command_type
+from mb.events import Event
+from mb.events import is_event_type
+from mb.exceptions import ConfigError
+from mb.exceptions import DuplicatedHandlerError
 from mb.exceptions import InvalidMessageError
-from mb.exceptions import MessageTypeError
 from mb.exceptions import MissingHandlerError
-from mb.injection import PreparedHandler
 from mb.messages import Message
-from mb.unit_of_work import UnitOfWork
 
 logger = logging.getLogger(__name__)
 

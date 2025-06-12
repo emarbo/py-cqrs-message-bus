@@ -1,7 +1,6 @@
 from django.db import models
 
 from mb import get_current_uow
-
 from tests.fixtures.scenarios.create_user import UserCreatedEvent
 
 

@@ -1,6 +1,6 @@
-from contextlib import contextmanager
-import typing as t
 import logging
+import typing as t
+from contextlib import contextmanager
 from contextvars import Token
 
 from mb.commands import Command

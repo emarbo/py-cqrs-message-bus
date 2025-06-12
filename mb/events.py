@@ -1,4 +1,5 @@
 import typing as t
+
 from mb.messages import Message
 from mb.messages import MessageMeta
 
