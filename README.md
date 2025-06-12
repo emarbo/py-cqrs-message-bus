@@ -6,10 +6,11 @@ This package provides an in-memory message bus to emit commands and events that
 will be managed by the registered handlers.
 
 Key features:
-* Dead simple
-* Flexible customization of messages
-* Deferred handling of events
-* Django integration
+
+- Dead simple
+- Flexible customization of messages
+- Deferred handling of events
+- Django integration
 
 ## Full example
 
@@ -176,7 +177,6 @@ if __name__ == "__main__":
 
 </details>
 
-
 ## Commands
 
 Commands are messages that produce a change on the system. They are addressed
@@ -223,7 +223,6 @@ fake handlers during tests. The message pattern always breaks "go to the
 definition" feature on any IDE and also takes more cycles than a direct call.
 It's not worth the complexity for an in-memory implementation.
 
-
 ```python
 from mb import MessageBus, Command, Event, UnitOfWork, get_current_uow
 
@@ -255,10 +254,11 @@ may have many handlers or none at all.
 As in the case of commands, the way they carry the payload is up to you.
 
 In contrast to commands, they support more subscription options:
-* By name
-* By pattern
-* By type and subtypes
-* By custom functions
+
+- By name
+- By pattern
+- By type and subtypes
+- By custom functions
 
 ```python
 from dataclasses import dataclass
@@ -438,10 +438,10 @@ def bus_middelware(get_response):
 The UnitOfWork injects the command or event to be handled and the UnitOfWork
 itself following these rules:
 
-* The parameter is typed (forward references don't work)
-* The parameter is named "message", "command", "cmd", "event" , "uow" or
+- The parameter is typed (forward references don't work)
+- The parameter is named "message", "command", "cmd", "event" , "uow" or
   "unit_of_work"
-* The parameter is positional and has no default value. In this case, the first
+- The parameter is positional and has no default value. In this case, the first
   possition is used for the message and the second for the UoW.
 
 Notice that handlers are not forced to receive this parameters. They may
@@ -501,7 +501,7 @@ with uow:
     assert uow is uow2
 
 # Registers globally
-with uow.register_globally():  
+with uow.register_globally():
     uow2 = get_current_uow()
     assert uow is uow2
 
@@ -522,7 +522,6 @@ transaction is committed or rolled back, the events are collected by the parent
 transaction or discarded (except for the persistent events). When the outermost
 transaction is closed, the remaining events are finally handled.
 
-
 ## Django integration
 
 This library provides a special `DjangoUnitOfWork` and `MessageBusMiddleware`
@@ -532,7 +531,7 @@ The `DjangoUnitOfWork` basically provides a handy `atomic()` that binds the
 database transaction to the UoW transaction. This works well even with
 different database connections (different `using=...`) provided that you're
 using the `atomic()` context manager to manage transactions. In other words,
-you don't  manually begin and rollback checkpoints.
+you don't manually begin and rollback checkpoints.
 
 The `MessageBusMiddleware` globally registers a new UoW on every request that
 is accessible by calling `get_current_uow()`. It bootstraps the UoW using the
@@ -541,7 +540,6 @@ bus defined at the Django setting variable `MB_BUS`. This variable can be a
 
 Tests can provide a different `UnitOfWork` (thus a different bus) by setting
 the `mb.uow` at the Django `request.META`.
-
 
 ## F.A.Q.
 
@@ -576,6 +574,6 @@ or succeed at once.
 
 ## Next steps
 
-* [ ] Poetry or uv
-* [ ] Testing multiple Python versions
-* [ ] Allow immediate event handlers
+- [ ] Poetry or uv
+- [ ] Testing multiple Python versions
+- [ ] Allow immediate event handlers
