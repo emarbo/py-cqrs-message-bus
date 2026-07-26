@@ -17,15 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 #
-# NOTE: subscrbing to Event means subscrbing to all events. In the same way,
-# subscribing to ParentEvent means subscribing to any ChildEvent(ParentEvent).
-# I dunno if this makes sense for everyone, I'm just exploring options and
-# trying in a real project to get a real experience.
-# Btw, I'll better check/revise how this works in Kafka or Rabbit and get some
-# clever ideas from the real pros.
-#
-
-#
 # TODO: Provide priority when subscribing.
 # By default, handlers are ordered by
 #
